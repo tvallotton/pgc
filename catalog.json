@@ -1,0 +1,378 @@
+{
+  "rows": [
+    {
+      "result": {
+        "schemas": [
+          {
+            "name": "foo",
+            "enums": [],
+            "models": [
+              {
+                "kind": "table",
+                "name": "foo",
+                "columns": [
+                  {
+                    "name": "matrix",
+                    "type": {
+                      "name": "int4",
+                      "display": "integer[]",
+                      "is_array": true,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 2
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "table",
+                "name": "foo2",
+                "columns": [
+                  {
+                    "name": "matrix",
+                    "type": {
+                      "name": "int4",
+                      "display": "integer[]",
+                      "is_array": true,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 3
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "public",
+            "enums": [{ "name": "mood", "values": ["sad", "ok", "happy"] }],
+            "models": [
+              {
+                "kind": "table",
+                "name": "bar",
+                "columns": [
+                  {
+                    "name": "id",
+                    "type": {
+                      "name": "uuid",
+                      "display": "uuid",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": false,
+                    "is_foreign_key": false,
+                    "is_primary_key": true,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "bar",
+                    "type": {
+                      "name": "text",
+                      "display": "text",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": true,
+                    "is_nullable": false,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "z",
+                    "type": {
+                      "name": "int4",
+                      "display": "integer",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "table",
+                "name": "baz",
+                "columns": [
+                  {
+                    "name": "bar_id",
+                    "type": {
+                      "name": "uuid",
+                      "display": "uuid",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": true,
+                    "is_primary_key": false,
+                    "foreign_table_name": "bar",
+                    "foreign_table_schema": "public"
+                  },
+                  {
+                    "name": "name",
+                    "type": {
+                      "name": "text",
+                      "display": "text",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": "'asd'::text",
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "composite",
+                "name": "complex",
+                "columns": [
+                  {
+                    "name": "r",
+                    "type": {
+                      "name": "float8",
+                      "display": "double precision",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "i",
+                    "type": {
+                      "name": "float8",
+                      "display": "double precision",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "view",
+                "name": "myview",
+                "columns": [
+                  {
+                    "name": "id",
+                    "type": {
+                      "name": "uuid",
+                      "display": "uuid",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "bar",
+                    "type": {
+                      "name": "text",
+                      "display": "text",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "z",
+                    "type": {
+                      "name": "int4",
+                      "display": "integer",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "materialized view",
+                "name": "myview2",
+                "columns": [
+                  {
+                    "name": "id",
+                    "type": {
+                      "name": "uuid",
+                      "display": "uuid",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "bar",
+                    "type": {
+                      "name": "text",
+                      "display": "text",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "z",
+                    "type": {
+                      "name": "int4",
+                      "display": "integer",
+                      "is_array": false,
+                      "schema_name": "pg_catalog",
+                      "is_composite": false,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              },
+              {
+                "kind": "table",
+                "name": "with_records",
+                "columns": [
+                  {
+                    "name": "a",
+                    "type": {
+                      "name": "foo",
+                      "display": "foo.foo",
+                      "is_array": false,
+                      "schema_name": "foo",
+                      "is_composite": true,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  },
+                  {
+                    "name": "b",
+                    "type": {
+                      "name": "bar",
+                      "display": "bar",
+                      "is_array": false,
+                      "schema_name": "public",
+                      "is_composite": true,
+                      "array_dimensions": 0
+                    },
+                    "default": null,
+                    "is_unique": false,
+                    "is_nullable": true,
+                    "is_foreign_key": false,
+                    "is_primary_key": false,
+                    "foreign_table_name": null,
+                    "foreign_table_schema": null
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "fields": [{ "name": "result", "dataTypeID": 3802 }],
+  "affectedRows": 0
+}
