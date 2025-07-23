@@ -1,0 +1,87 @@
+{%- for import in imports %}
+import {{import}}
+{%- endfor %}
+
+{% macro NAMESPACE(query_namespace) %}
+
+{% for query_subnamespace in query_namespace.subnamespaces %}
+{{NAMESPACE(query_subnamespace)}}
+{% endfor %}
+
+@dataclasses.dataclass
+class {{query_namespace.name}}:
+    def __init__(self, connection: Connection):
+        self.connection = Connection
+
+    {% for query in query_namespace.queries %}
+    {{ query.name | to_screaming_snake_case }} = query.text
+    {% endfor %}
+
+    {% for method in query.methods%}
+
+    {%- if method.returns == 'one' %}
+
+    async def {{method.name}}(self
+        {%- for argument, type in method.argument | items -%}
+            , {{argument}}: {{type}} | None
+        {%- endfor -%}
+        ) -> {{method.output_type.annotation}}:
+            row = await self.connection.fetchrow(
+                {{self.method.query.name | to_screaming_snake_case }}
+                {%- for argument in method.argument -%}
+                    , {{argument}}
+                {%- endfor -%}
+            )
+            return {{method.output_type.annotation}}(**row)
+    {%- elif method.returns == 'many' %}
+    async def {{method.name}}(self
+        {%- for argument, type in method.argument | items -%}
+            , {{argument}}: {{type}} | None
+        {%- endfor -%}
+        ) -> list[{{method.output_type.annotation}}]:
+            rows = await self.connection.fetchrow(
+                {{self.method.query.name | to_screaming_snake_case }}
+                {%- for argument in method.argument -%}
+                    , {{argument}}
+                {%- endfor -%}
+            )
+            return [{{method.output_type.annotation}}(**row) for row in rows]
+    {%- elif method.returns == 'val' %}
+    async def {{method.name}}(self
+        {%- for argument, type in method.argument | items -%}
+            , {{argument}}: {{type}} | None
+        {%- endfor -%}
+        ) -> list[{{method.output_type.annotation}}]:
+            rows = await self.connection.fetchrow(
+                {{self.method.query.name | to_screaming_snake_case }}
+                {%- for argument in method.argument -%}
+                    , {{argument}}
+                {%- endfor -%}
+            )
+            return [{{method.output_type.annotation}}(**row) for row in rows]
+
+    {%- endif %}
+
+    {% endfor %}
+
+{% endmacro %}
+
+
+
+async def init_connection(conn: asyncpg.Connection):
+    for ty in ['json', 'jsonb']:
+        await conn.set_type_codec(
+            ty,
+            encoder=json.dumps
+            decoder=json.loads
+        )
+
+
+    {% for model in models %}
+        await conn.set_type_codec(
+            '{{model.pgname}}',
+            encoder=lambda model: ({% for name in model.fields %} model.{{name}},{%endfor%})
+            decoder=lambda *args: {{model.type.constructor}}(*args),
+            format='tuple'
+        )
+    {% endfor %}

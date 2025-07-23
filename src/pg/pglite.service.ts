@@ -9,7 +9,7 @@ export class PGliteService {
   }
 
   static async fromConfig(configService: ConfigService) {
-    const options = configService.config.schema.pglite;
+    const options = configService.config.database.pglite;
 
     const extensions = await PGliteService.loadExtensions(options?.extensions);
 
@@ -29,7 +29,7 @@ export class PGliteService {
 
   async query<T>(query: string) {
     const { rows } = await this.pg.query(query);
-
+    console.log(rows);
     return rows as T[];
   }
 

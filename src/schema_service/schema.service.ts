@@ -21,8 +21,9 @@ export class SchemaService {
   }
 
   private async querySchemas() {
-    const rows = await this.pgService.pg.query(LOAD_SCHEMA_QUERY);
-    return rows[0] as Catalog;
+    const query = await this.pgService.pg.query(LOAD_SCHEMA_QUERY) as any;
+
+    return query[0]["result"] as Catalog;
   }
 }
 

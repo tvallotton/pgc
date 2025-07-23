@@ -29,7 +29,7 @@ export class ConfigService {
   }
 
   static formatErrorMessage(
-    error: ReturnType<typeof Config.safeParse>["error"],
+    error: eturnType<typeof Config.safeParse>["error"],
     configFile: string,
   ) {
     for (const issue of error?.errors ?? []) {
@@ -48,7 +48,7 @@ export class ConfigService {
   }
 
   migrations(): string[] {
-    const { migrations } = this.config.schema;
+    const { migrations } = this.config.database;
     if (migrations == undefined) return [];
     if (typeof migrations == "string") return [migrations];
     return migrations;

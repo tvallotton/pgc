@@ -34,16 +34,25 @@ returning *;
 ```
 
 ```py
-await queries.book.save(id)
+await queries.book.save(book=book)
+```
+
+## optional parameters
+You may use `?` instead of `$` to declare an optional parameter:
+```sql
+select * from book
+offset coalesce(?offset, 0)
+limit coalesce(?limit, 24)
 ```
 
 ## Automatic CRUD
 enabling CRUD will create for each model the following
 queries:
 
-* get_by_<unique key>
+* fetch_by_<unique key>
 * delete_by_<unique key>
-* save
+* upsert
+* insert
 
 ```yaml
 codegen:
@@ -53,8 +62,9 @@ codegen:
       -
 ```
 
+
 ## Foreign key enums
-It is a better practice to use foregin keys instead of enums in postgres, since this makes the program more extensible, and future changes to the enum easier to implement. For this reason you can mark a table as an enum in your config file. For example, here we have a schema with a foreign key enum:
+It is a better practice to use foregin keys instead of enums in postgres, since this makes the program more extensible, and future changes to the enum are easier to implement. For this reason you can mark a table as an enum in your config file. For example, here we have a schema with a foreign key enum:
 ```sql
 create table user_role (
     id text primary key

@@ -9,6 +9,7 @@ export interface SQLType {
 
 export interface Parameter {
   name: string;
+  not_null: boolean;
   type: PGType;
 }
 

@@ -11,7 +11,7 @@ export class PGService {
   }
 
   static async fromConfig(configService: ConfigService) {
-    const { database_url } = configService.config.schema;
+    const { url: database_url } = configService.config.database;
 
     if (database_url != undefined) {
       const pg = PostgresDriverService.fromDatabaseUrl(database_url);
@@ -50,9 +50,9 @@ export class PGService {
           t.oid AS id
       FROM pg_type t
       LEFT JOIN pg_namespace n ON n.oid = t.typnamespace
+
       ORDER BY id;
     `);
-    console.log("TYPES", types);
     for (const type of types) {
       this.types.set(type.id, type);
     }

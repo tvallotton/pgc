@@ -1,0 +1,11 @@
+{%- for import in imports %}
+import {{import}}
+{%- endfor %}
+
+{% for model in models%}
+@dataclasses.dataclass
+class {{model.type.name}}:
+    {%- for name in model.fields %}
+        {{name}}: {{model.fields[name].type.annotation}}
+    {%- endfor %}
+{% endfor -%}

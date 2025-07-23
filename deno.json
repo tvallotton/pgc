@@ -6,6 +6,8 @@
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
     "@electric-sql/pglite": "npm:@electric-sql/pglite@^0.3.4",
     "@std/assert": "jsr:@std/assert@1",
+    "@std/fs": "jsr:@std/fs@^1.0.19",
+    "@std/path": "jsr:@std/path@^1.1.1",
     "@std/yaml": "jsr:@std/yaml@^1.0.8",
     "@types/node": "npm:@types/node@^24.0.7",
     "commander": "npm:commander@^14.0.0",

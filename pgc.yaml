@@ -3,8 +3,8 @@ version: "1"
 env_file:
   - .env
 
-schema:
-  migrations: ./migrations/*.sql
+database:
+  migrations: schema.sql
   # database_url: postgres://postgres:password@127.0.0.1:5432/dev
   pglite:
     # username: postgres
@@ -12,10 +12,11 @@ schema:
     extensions:
       vector: "@electric-sql/pglite/vector"
 queries:
-  - "asd.sql"
-# codegen:
-#   binary:
-#     url: <url>.wasm
-#     sha256: <hex digest>
-#   out: ./src/queries
-#   options:
+  - "queries.sql"
+codegen:
+  target: python
+  #   binary:
+  #     url: <url>.wasm
+  #     sha256: <hex digest>
+  out: ./src/queries
+  options:

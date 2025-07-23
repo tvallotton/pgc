@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DatabaseURLSourceConfig = z.object({
-  database_url: z.string(),
+  url: z.string(),
   pglite: z.undefined(),
   migrations: z.undefined(),
 });
@@ -13,12 +13,12 @@ const PGLiteOptions = z.object({
 });
 
 const MigrationsSourceConfig = z.object({
-  database_url: z.undefined(),
+  url: z.undefined(),
   migrations: z.string().array().or(z.string()),
   pglite: PGLiteOptions.optional(),
 });
 
-const SchemaConfig = MigrationsSourceConfig.or(DatabaseURLSourceConfig);
+const DatabaseConfig = MigrationsSourceConfig.or(DatabaseURLSourceConfig);
 
 const PluginConfig = z.object({
   url: z.string(),
@@ -27,6 +27,7 @@ const PluginConfig = z.object({
 
 const CodegenConfig = z.object({
   out: z.string(),
+  target: z.string(),
   plugin: PluginConfig.optional(),
   options: z.object({}).passthrough().optional().nullable(),
 });
@@ -36,8 +37,8 @@ export const Config = z.object({
   queries: z.string().or(z.string().array()),
   cache_dir: z.string().optional(),
   disable_cache: z.boolean().default(false),
-  schema: SchemaConfig,
-  codegen: CodegenConfig.optional(),
+  database: DatabaseConfig,
+  codegen: CodegenConfig,
   env_file: z.string().or(z.string().array()),
 });
 

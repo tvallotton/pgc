@@ -1,3 +1,4 @@
+import { CodegenService } from "../codegen/codegen.service.ts";
 import type { ConfigService } from "../config/config.service.ts";
 import { FileCollectorService } from "../fs/file_collector.service.ts";
 import { PGService } from "../pg/pg.service.ts";
@@ -13,9 +14,10 @@ export class BuildService {
     readonly rawQueryCollector: RawQueryCollector,
     readonly queryParser: QueryParserService,
     readonly schemaService: SchemaService,
+    readonly codegenService: CodegenService,
   ) {}
 
-  async static(configService: ConfigService) {
+  static async fromConfig(configService: ConfigService) {
     const pgService = await PGService.fromConfig(configService);
 
     const fileCollectorService = new FileCollectorService(configService);
@@ -24,6 +26,7 @@ export class BuildService {
 
     const queryParser = new QueryParserService(pgService);
     const schemaService = new SchemaService(pgService, fileCollectorService);
+    const codegenService = new CodegenService(configService);
 
     return new BuildService(
       configService,
@@ -32,10 +35,19 @@ export class BuildService {
       rawQueryCollector,
       queryParser,
       schemaService,
+      codegenService,
     );
   }
 
   async build() {
+    let payload = {
+      catalog: await this.getCatalog(),
+      queries: await this.getQueries(),
+      config: this.configService.config,
+    };
+    console.log("payload", JSON.stringify(payload));
+
+    await this.codegenService.generate(payload);
   }
 
   async getCatalog() {
@@ -46,9 +58,10 @@ export class BuildService {
     const rawQueries = await this.rawQueryCollector.loadQueries();
     const queries = [];
     for (const rawQuery of rawQueries) {
-      queries.push(
-        await this.queryParser.parseQuery(rawQuery),
-      );
+      const query = await this.queryParser.parseQuery(rawQuery);
+      if (query) {
+        queries.push(query);
+      }
     }
     return queries;
   }
