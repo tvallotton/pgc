@@ -29,7 +29,7 @@ export class PGliteService {
 
   async query<T>(query: string) {
     const { rows } = await this.pg.query(query);
-    console.log(rows);
+
     return rows as T[];
   }
 
@@ -39,7 +39,6 @@ export class PGliteService {
 
   async describe(query: string): Promise<QueryDescription<number>> {
     const { resultFields, queryParams } = await this.pg.describeQuery(query);
-    console.log(query, resultFields, queryParams);
     return {
       query,
       inputs: queryParams.map((input) => input.dataTypeID),
@@ -49,4 +48,6 @@ export class PGliteService {
       })),
     };
   }
+
+  async close() {}
 }

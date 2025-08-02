@@ -6,9 +6,20 @@ export class PostgresDriverService {
     readonly sql: postgres.Sql,
   ) {}
 
+  static new(databaseUrl: string) {
+    if (databaseUrl.startsWith("$")) {
+      return PostgresDriverService.fromEnvironment(databaseUrl.slice(1));
+    }
+    return PostgresDriverService.fromDatabaseUrl(databaseUrl);
+  }
+
   static fromDatabaseUrl(databaseUrl: string) {
     const sql = postgres(databaseUrl);
     return new PostgresDriverService(sql);
+  }
+
+  static fromEnvironment(variableName: string) {
+    return PostgresDriverService.fromDatabaseUrl(Deno.env.get(variableName)!);
   }
 
   async query<T>(query: string) {
@@ -29,5 +40,14 @@ export class PostgresDriverService {
         type: column.type,
       })),
     };
+  }
+  async close() {
+    await this.sql.end();
+  }
+}
+
+function databaseUrl(databaseUrl: string) {
+  if (databaseUrl.startsWith("$")) {
+    return;
   }
 }

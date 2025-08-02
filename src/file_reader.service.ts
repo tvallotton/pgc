@@ -8,11 +8,11 @@ class FileReaderService {
   constructor(readonly configService: ConfigService) {
   }
 
-  async read(): File[] {
-    for (const path of await this.filePaths()) {
-      const contents = await Deno.readTextFile(path);
-    }
-  }
+  // async read(): File[] {
+  //   for (const path of await this.filePaths()) {
+  //     const contents = await Deno.readTextFile(path);
+  //   }
+  // }
 
   async filePaths() {
     const set = new Set<string>();

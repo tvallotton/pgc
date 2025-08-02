@@ -1,22 +1,23 @@
 version: "1"
 
-env_file:
-  - .env
-
 database:
-  migrations: schema.sql
-  # database_url: postgres://postgres:password@127.0.0.1:5432/dev
-  pglite:
-    # username: postgres
-    # database: database_name
-    extensions:
-      vector: "@electric-sql/pglite/vector"
+  # migrations:
+  #   - schema.sql
+  url: $DB_URL
+  # pglite:
+  #   extensions:
+  #     pg_trgm: "@electric-sql/pglite/contrib/pg_trgm"
 queries:
+  - "book.sql"
+  - "author.sql"
   - "queries.sql"
 codegen:
-  target: python
-  #   binary:
-  #     url: <url>.wasm
-  #     sha256: <hex digest>
-  out: ./src/queries
+  target: python:asyncpg
+  out: ./queries
+
+  types:
+    pg_catalog.uuid:
+      name: str
+
   options:
+    package: queries

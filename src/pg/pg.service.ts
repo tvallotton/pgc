@@ -3,6 +3,7 @@ import type { PGSourceService, QueryDescription } from "./pg.types.ts";
 import type { ConfigService } from "../config/config.service.ts";
 import { PostgresDriverService } from "./postgres_driver.service.ts";
 import type { RawQuery, SQLType } from "../query_collector/query.types.ts";
+import { File } from "../fs/fs.types.ts";
 
 export class PGService {
   types: Map<number, SQLType>;
@@ -14,7 +15,7 @@ export class PGService {
     const { url: database_url } = configService.config.database;
 
     if (database_url != undefined) {
-      const pg = PostgresDriverService.fromDatabaseUrl(database_url);
+      const pg = PostgresDriverService.new(database_url);
       return new PGService(pg).loadTypes();
     }
 
@@ -38,8 +39,15 @@ export class PGService {
     try {
       return await this.pg.describe(rawQuery.sql);
     } catch (e) {
-      throw Error(`\`${rawQuery.file.path}:${rawQuery.line}\` ${e}`);
+      throw Error(`"${rawQuery.file.path}:${rawQuery.line}" ${e}`);
     }
+  }
+
+  async loadMigrations(migrations: Promise<File>[]) {
+    for (const migration of migrations) {
+      await this.pg.execute((await migration).content);
+    }
+    this.loadTypes();
   }
 
   async loadTypes() {
@@ -57,5 +65,9 @@ export class PGService {
       this.types.set(type.id, type);
     }
     return this;
+  }
+
+  close() {
+    return this.pg.close();
   }
 }

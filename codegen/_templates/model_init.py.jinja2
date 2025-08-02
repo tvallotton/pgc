@@ -9,7 +9,7 @@ from . import {{filename}}
 from . import {{filename}}
 {%- endif %}
 {%- endfor %}
-from {{package}}.models.{{default_schema}} import (
+from .models.{{default_schema}} import (
     {%- for model in models%}
     {{model.python_type.declaration}},
     {%- endfor %}

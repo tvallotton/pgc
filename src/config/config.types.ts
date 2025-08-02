@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DatabaseURLSourceConfig = z.object({
-  url: z.string(),
+  url: z.string().optional(),
   pglite: z.undefined(),
   migrations: z.undefined(),
 });
@@ -25,10 +25,17 @@ const PluginConfig = z.object({
   sha256: z.string().optional(),
 });
 
+const TypeOverride = z.object({
+  name: z.string(),
+  annotation: z.string().optional(),
+  import: z.string().array().optional(),
+});
+
 const CodegenConfig = z.object({
   out: z.string(),
   target: z.string(),
   plugin: PluginConfig.optional(),
+  types: z.record(z.string(), TypeOverride).optional(),
   options: z.object({}).passthrough().optional().nullable(),
 });
 
@@ -39,7 +46,6 @@ export const Config = z.object({
   disable_cache: z.boolean().default(false),
   database: DatabaseConfig,
   codegen: CodegenConfig,
-  env_file: z.string().or(z.string().array()),
 });
 
 export type Config = z.infer<typeof Config>;

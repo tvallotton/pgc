@@ -1,0 +1,24 @@
+import dataclasses
+{%- if enums %}
+import enum
+{%- endif %}
+{%- for import in imports %}
+import {{import}}
+{%- endfor %}
+
+{%- for enum in enums %}
+
+class {{enum.name | to_pascal_case }}(enum.StrEnum):
+    {%- for value in enum.values %}
+    {{ value | to_screaming_snake_case }} = {{ value | to_c_string }}
+    {%- endfor %}
+{% endfor %}
+
+{%- for model in models %}
+
+@dataclasses.dataclass
+class {{model.type.declaration}}:
+    {%- for field, type in model.fields %}
+    {{field}}: {{type.annotation}}
+    {%- endfor %}
+{%- endfor %}

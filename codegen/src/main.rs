@@ -1,26 +1,26 @@
+use crate::file_generator::FileGenerator;
+use crate::request::Request;
+use crate::response::{File, Response};
 use error::Error;
 use serde::Serialize;
 use serde_json::json;
-use std::mem::forget;
 use std::sync::atomic::Ordering::Relaxed;
-use std::thread::Builder;
-use std::{
-    io::{self, Cursor, Read, Write},
-    slice,
-    sync::atomic::{AtomicU64, AtomicUsize},
-};
+use std::{slice, sync::atomic::AtomicU64};
 
-use crate::request::Request;
+pub mod error;
+pub mod file_gen_config;
+pub mod file_generator;
+pub mod jinja_environment_builder;
+pub mod method;
+pub mod mock;
+pub mod model_modules;
+pub mod query_namespace;
+pub mod request;
+pub mod response;
+pub mod template_context;
+pub mod r#type;
+pub mod type_builder;
 
-mod builder;
-mod error;
-mod method;
-mod mock;
-mod query_namespace;
-mod request;
-mod response;
-mod template_context;
-mod r#type;
 mod utils;
 
 #[no_mangle]
@@ -39,12 +39,12 @@ pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn try_build(ptr: *mut u8, size: usize) -> Result<impl Serialize, Error> {
+fn try_build(ptr: *mut u8, size: usize) -> Result<impl Serialize, Error> {
     let request = load_request(ptr, size)?;
-
-    let builder = builder::Builder::new(request.clone());
-    builder.build()
+    let generator = FileGenerator::new(&request)?;
+    Ok(Response {
+        files: generator.render_files()?,
+    })
 }
 
 static RESPONSE_LENGTH: AtomicU64 = AtomicU64::new(0);

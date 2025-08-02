@@ -7,6 +7,6 @@ pub struct Response {
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct File {
-    path: String,
-    content: String,
+    pub path: String,
+    pub content: String,
 }

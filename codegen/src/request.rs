@@ -1,4 +1,6 @@
 use std::collections::BTreeMap;
+use std::collections::HashMap;
+use std::iter::Map;
 use std::rc::Rc;
 
 use serde::Deserialize;
@@ -41,7 +43,7 @@ pub struct Model {
 pub struct Column {
     pub name: Rc<str>,
     #[serde(rename = "type")]
-    pub type_field: Type,
+    pub type_field: ColumnType,
     pub default: Option<Rc<str>>,
     pub is_unique: bool,
     pub is_nullable: bool,
@@ -52,7 +54,7 @@ pub struct Column {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Type {
+pub struct ColumnType {
     pub name: Rc<str>,
     pub display: Rc<str>,
     pub is_array: bool,
@@ -67,19 +69,14 @@ pub struct Query {
     pub name: Rc<str>,
     pub command: Rc<str>,
     pub path: Rc<str>,
-    pub annotations: Annotations,
+    pub annotations: Rc<BTreeMap<String, Annotation>>,
     pub output: Rc<[OutputColumn]>,
     pub parameters: Rc<[Parameter]>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Annotations {
-    pub name: Name,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Name {
-    pub value: Rc<str>,
+pub struct Annotation {
+    pub value: Option<Rc<str>>,
     pub line: i64,
 }
 
@@ -102,32 +99,14 @@ pub struct Parameter {
     pub name: Rc<str>,
     #[serde(rename = "type")]
     pub type_: QueryType,
+    pub not_null: bool,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub version: Rc<str>,
     pub queries: Rc<[Rc<str>]>,
-    pub disable_cache: bool,
-    pub database: Database,
     pub codegen: Codegen,
-    pub env_file: Rc<[Rc<str>]>,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Database {
-    pub migrations: Rc<str>,
-    pub pglite: Pglite,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Pglite {
-    pub extensions: Extensions,
-}
-
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Extensions {
-    pub vector: Rc<str>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -135,13 +114,15 @@ pub struct Codegen {
     pub out: Rc<str>,
     pub target: Rc<str>,
     #[serde(default)]
-    pub types: BTreeMap<Rc<str>, TypeConfig>,
+    pub types: Rc<BTreeMap<Rc<str>, TypeConfig>>,
     pub options: Value,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TypeConfig {
-    name: Rc<str>,
-    annotation: Rc<str>,
-    import: Rc<[Rc<str>]>,
+    pub name: Rc<str>,
+    #[serde(default)]
+    pub annotation: Option<Rc<str>>,
+    #[serde(default)]
+    pub import: Rc<[Rc<str>]>,
 }

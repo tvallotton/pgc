@@ -1,0 +1,108 @@
+{
+  "new_type_case": "{{ name | to_pascal_case }}",
+  "array": {
+    "constructor": "list",
+    "annotation": "list[{{type.annotation}}]"
+  },
+  "null": {
+    "declaration": "{{type.declaration}}",
+    "constructor": "{{type.constructor}}",
+    "annotation": "{{type.annotation}} | None"
+  },
+  "composite": {
+    "declaration": "{{ type_name | to_pascal_case }}",
+    "constructor": "models.{{ type_schema | to_snake_case }}.{{ type_name | to_pascal_case }}",
+    "annotation": "models.{{ type_schema | to_snake_case }}.{{ type_name | to_pascal_case }}",
+    "import": []
+  },
+  "wildcard": {
+    "name": "typing.Any",
+    "import": ["typing"]
+  },
+  "schema": {
+    "pg_catalog": {
+      "bool": { "name": "bool" },
+      "bytea": { "name": "bytes" },
+      "char": { "name": "str" },
+      "int8": { "name": "int" },
+      "int2": { "name": "int" },
+      "int4": { "name": "int" },
+      "text": { "name": "str" },
+      "json": { "name": "dict" },
+      "point": { "name": "asyncpg.types.Point", "import": ["asyncpg"] },
+      "box": { "name": "asyncpg.pgproto.types.Box", "import": ["asyncpg"] },
+      "polygon": {
+        "name": "asyncpg.pgproto.types.Polygon",
+        "import": ["asyncpg"]
+      },
+      "line": {
+        "name": "asyncpg.pgproto.types.Line",
+        "import": ["asyncpg"]
+      },
+
+      "float4": { "name": "float" },
+      "float8": { "name": "float" },
+      "unknown": { "name": "typing.Any", "import": ["typing"] },
+      "circle": {
+        "name": "asyncpg.pgproto.types.Circle",
+        "import": ["asyncpg"]
+      },
+      "varchar": { "name": "str" },
+      "date": { "name": "datetime.date", "import": ["datetime"] },
+      "time": { "name": "datetime.time", "import": [] },
+      "timestamp": {
+        "name": "datetime.datetime",
+        "import": ["datetime"]
+      },
+      "timestamptz": {
+        "name": "datetime.datetime",
+        "import": ["datetime"]
+      },
+      "interval": {
+        "name": "datatime.timedelta",
+        "import": ["datetime"]
+      },
+      "timetz": { "name": "datetime.time", "import": ["datetime"] },
+      "numeric": { "name": "decimal.Decimal", "import": ["decimal"] },
+      "record": { "name": "asyncpg.Record", "import": ["asyncpg"] },
+      "any": { "name": "typing.Any", "import": ["typing"] },
+      "anyarray": { "name": "list[typing.Any]", "import": ["typing"] },
+      "anyelement": { "name": "typing.Any", "import": ["typing"] },
+      "anynonarray": { "name": "typing.Any", "import": ["typing"] },
+      "uuid": { "name": "uuid.UUID", "import": ["uuid"] },
+      "anyenum": { "name": "str" },
+      "anyrange": { "name": "asyncpg.Range", "import": ["asyncpg"] },
+      "jsonb": { "name": "dict" },
+      "int4range": {
+        "name": "asyncpg.types.Range",
+        "annotation": "asyncpg.types.Range[int]",
+        "import": ["asyncpg"]
+      },
+      "numrange": {
+        "name": "asyncpg.types.Range",
+        "annotation": "asyncpg.types.Range[float]",
+        "import": ["asyncpg"]
+      },
+      "tsrange": {
+        "name": "asyncpg.types.Range",
+        "annotation": "asyncpg.types.Range[datetime.datetime]",
+        "import": ["asyncpg", "datetime"]
+      },
+      "tstzrange": {
+        "name": "tstzrange",
+        "annotation": "asyncpg.types.Range[datetime.datetime]",
+        "import": ["asyncpg", "datetime"]
+      },
+      "daterange": {
+        "name": "asyncpg.types.Range",
+        "annotation": "asyncpg.types.Range[datetime.date]",
+        "import": ["asyncpg", "datetime"]
+      },
+      "int8range": {
+        "name": "asyncpg.types.Range",
+        "annotation": "asyncpg.types.Range[int]",
+        "import": ["asyncpg"]
+      }
+    }
+  }
+}

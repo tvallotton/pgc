@@ -1,5 +1,5 @@
 import { CodegenService } from "../codegen/codegen.service.ts";
-import type { ConfigService } from "../config/config.service.ts";
+import { ConfigService } from "../config/config.service.ts";
 import { FileCollectorService } from "../fs/file_collector.service.ts";
 import { PGService } from "../pg/pg.service.ts";
 import { RawQueryCollector } from "../query_collector/query_collector.servce.ts";
@@ -25,7 +25,11 @@ export class BuildService {
     const rawQueryCollector = new RawQueryCollector(fileCollectorService);
 
     const queryParser = new QueryParserService(pgService);
-    const schemaService = new SchemaService(pgService, fileCollectorService);
+    const schemaService = new SchemaService(
+      pgService,
+      fileCollectorService,
+      configService,
+    );
     const codegenService = new CodegenService(configService);
 
     return new BuildService(
@@ -45,7 +49,6 @@ export class BuildService {
       queries: await this.getQueries(),
       config: this.configService.config,
     };
-    console.log("payload", JSON.stringify(payload));
 
     await this.codegenService.generate(payload);
   }
@@ -64,5 +67,9 @@ export class BuildService {
       }
     }
     return queries;
+  }
+
+  close() {
+    return this.pgService.close();
   }
 }

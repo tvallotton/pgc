@@ -1,7 +1,7 @@
 import type { PGService } from "../pg/pg.service.ts";
 import type { Annotation, Parameter, Query, RawQuery } from "./query.types.ts";
 
-const ANNOTATION = /\s*--\s*@(\w+):\s*([^\n]+)\s*/;
+const ANNOTATION = /\s*--\s*@(\w+)(?::\s*([^\n]+))?\s*/;
 const PARAMETER =
   /([?\$][A-Za-z]\w*|\$\([A-Za-z]\w*\))|[?\$]\(([A-Za-z]\w*).([A-Za-z]\w*)\)/g;
 const COMMENT = /\s*--[^\n]+\n/g;
@@ -56,16 +56,12 @@ export class QueryParserService {
     );
     if (!match) {
       throw Error(
-        `\`${query.file.path}:${name.line}\` invalid query return specifier (expected one of: :val, :one, :many, :exec)`,
+        `"${query.file.path}:${name.line}" invalid query return specifier (expected one of: :val, :one, :many, :exec)`,
       );
     }
-    console.log("MATCH", match);
 
     query.line = name.line;
-    console.log({
-      name: match[1],
-      command: match[2],
-    });
+
     return {
       name: match[1],
       command: match[2],

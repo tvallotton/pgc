@@ -1,6 +1,9 @@
 {
   "tasks": {
-    "dev": "deno run --allow-net --allow-run --allow-env --allow-write --allow-read src/main.ts"
+    "build:wasm": "deno run --allow-sys --allow-run --allow-net --allow-env --allow-write --allow-read build.ts",
+    "dev": "deno run --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read src/main.ts",
+    "build": "deno run build:wasm && deno compile --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read --output pgc src/main.ts",
+    "install": "deno run build && mv pgc ~/.local/bin"
   },
   "imports": {
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",

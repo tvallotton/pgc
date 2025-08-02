@@ -1,3 +1,4 @@
+import { ConfigService } from "../config/config.service.ts";
 import type { FileCollectorService } from "../fs/file_collector.service.ts";
 import type { PGService } from "../pg/pg.service.ts";
 import type { Catalog } from "./schema.types.ts";
@@ -6,6 +7,7 @@ export class SchemaService {
   constructor(
     readonly pgService: PGService,
     readonly fileCollectorService: FileCollectorService,
+    readonly configService: ConfigService,
   ) {}
 
   async loadCatalog() {
@@ -15,15 +17,22 @@ export class SchemaService {
 
   private async loadMigrations() {
     const migrationFiles = await this.fileCollectorService.getMigrationFiles();
-    for (const migration of migrationFiles) {
-      await this.pgService.pg.execute((await migration).content);
-    }
+    await this.pgService.loadMigrations(migrationFiles);
   }
 
   private async querySchemas() {
     const query = await this.pgService.pg.query(LOAD_SCHEMA_QUERY) as any;
 
     return query[0]["result"] as Catalog;
+  }
+
+  private async setTableEnums() {
+    const enums = this.configService.enums();
+
+    for (const enum_ of enums) {
+      if (typeof enum_ == "string") {
+      }
+    }
   }
 }
 

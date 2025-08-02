@@ -18,12 +18,14 @@ program.command("build").description(
     console.log(error);
     return;
   }
-
+  let buildService;
   try {
-    const buildService = await BuildService.fromConfig(configService);
+    buildService = await BuildService.fromConfig(configService);
     await buildService.build();
   } catch (e) {
-    console.log(e);
+    console.log((e as Error).message);
+  } finally {
+    await buildService?.close();
   }
 });
 

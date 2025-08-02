@@ -1,43 +1,137 @@
+## Pgc – PostgreSQL Query Compiler
+
+Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parses SQL queries, validates them against your schema, and generates strongly-typed models and async methods to execute them from your application code.
+
+# Features
+* Namespacing of queries
+* Row types
+* Grouping arguments into structs
+* Foreign key enums
+* Wasm plugin support
 
 
-# Intended features
+# Examples
+for the following examples, this reference schema is used:
+```sql
+create table author (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  birthday date
+);
+
+create table genre (
+    id text primary key
+);
+
+create table book (
+    id uuid primary key default gen_random_uuid(),
+    title text not null,
+    author_id uuid not null references author(id),
+    year int not null,
+    isbn text not null unique,
+    is_best_seller bool default false,
+    genre text not null references genre(id)
+);
+
+insert into genre values
+    ('comedy'),
+    ('drama'),
+    ('science fiction'),
+    ('fantasy'),
+    ('biography');
+
+```
+
+## Introduction
+Pgc is a compiler for postgres (heavily inspired on sqlc), which aims to type check postgres queries and generate models and methods to perform such queries.
 
 
-## Embedded structs
+## Namespaced queries
+
+Queries are grouped by file name or an explicit `@namespace` directive:
 
 ```sql
--- @name: get_by_id
-select author, book
+-- book.sql
+-- by default queries on this file will be found at queries.book.*
+
+-- @name: get_by_id :one
+select book.* from book where $id = id;
+
+-- @namespace: author
+-- @name: get_books :many
+select book.* from book
+join author on author.id = book.id
+where author.id = $author_id
+```
+Now if we want to access each query we can use:
+```python
+await queries.book.get_by_id(book_id)
+await queries.author.get_books(author_id)
+```
+Nested namespaces are also supported:
+```sql
+-- @namespace: book.metrics
+-- @name: get_best_sellers :many
+select book from book where book.is_best_seller;
+```
+Then this method can be accessed as:
+```python
+await queries.book.metrics.get_best_sellers()
+```
+
+
+## Row types
+
+PostgreSQL supports returning composite row types directly. Pgc takes advantage of this to provide rich typed results for joined queries:
+```sql
+-- author.sql
+-- @name: get_author_with_books :one
+select author, array_agg(book) as books
 from author
 join book from on author.id = book.author_id
-where author.id = $id
+where book.id = $book_id
+group by author.id
 ```
 
 ```py
-await queries.author.get_by_id(id)
+row = await queries.author.get_author_with_books(author.id)
+assert isinstance(Author, row.author)
+assert isinstance(Book, row.books[0])
 ```
+This saves us the need to construct an instance of `Book` and `Author` in our application from the resulting row.
 
 ## Argument grouping
+When passing multiple arguments (e.g., in INSERT or UPDATE), use field path syntax for clarity and grouping:
+* `$(record.field)`: for required agruments
+* `?(record.field)`: for optional agruments
+
 ```sql
--- @name: save
+-- @name: upsert
 insert into book
 values (
     $(book.title),
     $(book.author_id),
     $(book.year),
+    $(book.isbn),
+    $(book.is_best_seller),
+    $(book.genre)
 )
 on conflict (id) do update set
-    title = $(book.title),
-    author_id = $(book.author_id),
-    year = $(book.year),
-returning *;
+    title =          $(book.title),
+    author_id =      $(book.author_id),
+    year =           $(book.year),
+    isbn =           $(book.isbn),
+    is_best_seller = $(book.is_best_seller),
+    genre =          $(book.genre)
+returning book;
 ```
 
 ```py
-await queries.book.save(book=book)
+await queries.book.upsert(book=book)
 ```
 
-## optional parameters
+
+## Optional parameters
 You may use `?` instead of `$` to declare an optional parameter:
 ```sql
 select * from book
@@ -46,55 +140,54 @@ limit coalesce(?limit, 24)
 ```
 
 ## Automatic CRUD
-enabling CRUD will create for each model the following
-queries:
-
-* fetch_by_<unique key>
-* delete_by_<unique key>
-* upsert
-* insert
+Enable automatic generation of standard queries (insert, delete, fetch, upsert):
 
 ```yaml
 codegen:
   crud:
-    include: all
+    include: .*
     exclude:
-      -
+      - audit_logs
 ```
+Generated methods for each model:
+* get_by_<unique key>
+* delete_by_<unique key>
+* upsert
+* insert
 
 
 ## Foreign key enums
-It is a better practice to use foregin keys instead of enums in postgres, since this makes the program more extensible, and future changes to the enum are easier to implement. For this reason you can mark a table as an enum in your config file. For example, here we have a schema with a foreign key enum:
+Instead of using raw enum types in Postgres, prefer foreign-key-backed enums for extensibility:
 ```sql
-create table user_role (
+create table genre (
     id text primary key
 );
 
-
-insert into user_role values ('admin'), ('staff'), ('consumer');
-
-create table "user" (
-    id uuid primary key,
-    email text not null unique,
-    role text not null references user_role(id),
-)
+insert into genre values
+    ('science fiction'),
+    ('fantasy'),
+    ('biography');
 ```
+Mark these as enums in your config:
 ```yaml
 codegen:
   options:
     enums:
-      user_role:
+      - genre
 ```
+
+This generates:
 ```python
-class UserRole(StrEnum):
-    ADMIN = 'admin'
-    STAFF = 'staff'
-    CONSUMER = 'consumer'
+class Genre(enum.StrEnum):
+    SCIENCE_FICTION = 'science fiction'
+    FANTASY = 'fantasy'
+    BIOGRAPHY = 'biography'
 ```
 However, if you don't specify your values in your schema, you may specify them in your config file
 ```yaml
-user_role:
-  - 'admin'
-  - 'staff'
-  - 'consumer'
+enums:
+  - genre:
+    - "science fiction"
+    - "fantasy"
+    - "biography"
 ```

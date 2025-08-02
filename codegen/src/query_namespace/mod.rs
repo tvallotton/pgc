@@ -1,7 +1,14 @@
-use std::{collections::BTreeMap, rc::Rc};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    rc::Rc,
+};
 
-use crate::{method::Method, utils::to_pascal_case};
+use crate::{error::Error, method::Method, request::Request, utils::to_pascal_case};
+pub use query_namespace_builder::QueryNamespaceBuilder;
+use serde::{Deserialize, Serialize};
+mod query_namespace_builder;
 
+#[derive(Serialize, Deserialize)]
 pub struct QueryNamespace {
     pub name: String,
     pub subnamespaces: BTreeMap<Rc<str>, QueryNamespace>,
@@ -9,12 +16,23 @@ pub struct QueryNamespace {
 }
 
 impl QueryNamespace {
-    pub fn new() -> QueryNamespace {
+    pub fn from_request(request: &Request) -> Result<Self, Error> {
+        Ok(QueryNamespaceBuilder::new(request)?.build())
+    }
+
+    fn root() -> QueryNamespace {
         QueryNamespace {
-            name: "Queries".into(),
+            name: String::new(),
             subnamespaces: Default::default(),
             methods: Default::default(),
         }
+    }
+
+    pub fn imports(&self) -> BTreeSet<&str> {
+        self.methods
+            .iter()
+            .flat_map(|method| method.imports())
+            .collect()
     }
 
     pub fn resolve(&mut self, name: &str) -> &mut QueryNamespace {
@@ -29,7 +47,7 @@ impl QueryNamespace {
         let entry = self.subnamespaces.entry(name[0].into());
 
         let namespace = entry.or_insert_with(|| QueryNamespace {
-            name: to_pascal_case(name[0].into()) + "Queries",
+            name: name[0].into(),
             methods: Default::default(),
             subnamespaces: Default::default(),
         });

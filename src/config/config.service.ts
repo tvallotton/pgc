@@ -1,6 +1,9 @@
 import * as YAML from "jsr:@std/yaml";
 import { Config } from "./config.types.ts";
 import type { File } from "../fs/fs.types.ts";
+import * as path from "node:path";
+import * as os from "node:os";
+
 import type { Extension, PGliteOptions } from "@electric-sql/pglite";
 
 export class ConfigService {
@@ -29,15 +32,23 @@ export class ConfigService {
   }
 
   static formatErrorMessage(
-    error: eturnType<typeof Config.safeParse>["error"],
+    error: ReturnType<typeof Config.safeParse>["error"],
     configFile: string,
   ) {
     for (const issue of error?.errors ?? []) {
       const code = issue.code.replaceAll("_", " ").replaceAll("union", "value");
       const path = issue.path.join(".");
       const message = issue.message.toLowerCase();
-      return `error: ${code} for option \`${path}\`, ${message}, at \`${configFile}\`.`;
+      return `error: ${code} for option "${path}", ${message}, at "${configFile}".`;
     }
+  }
+
+  enums(): (string | Record<string, string[]>)[] {
+    const enums = this.config.codegen.options?.enums;
+    if (enums instanceof Array) {
+      return enums;
+    }
+    return [];
   }
 
   queries() {
@@ -47,11 +58,25 @@ export class ConfigService {
     return this.config.queries;
   }
 
+  cacheDir() {
+    if (os.platform() === "win32") {
+      return path.join(
+        Deno.env.get("LOCALAPPDATA") ??
+          path.join(os.homedir(), "AppData", "Local"),
+        "pgc",
+      );
+    }
+    return (
+      this.config.cache_dir ??
+        path.join(os.homedir(), ".cache/pgc")
+    );
+  }
+
   migrations(): string[] {
     const { migrations } = this.config.database;
     if (migrations == undefined) return [];
     if (typeof migrations == "string") return [migrations];
-    return migrations;
+    return migrations.sort();
   }
 
   checkVersion() {

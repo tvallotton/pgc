@@ -1,0 +1,12 @@
+{%- for module in model_modules -%}
+from . import {{module}}
+{% endfor -%}
+
+
+{%- if model_modules["public"] -%}
+from .public import (
+{%- for model_class in model_modules["public"].classes %}
+    {{model_class.type.declaration}},
+{%- endfor %}
+)
+{% endif %}
