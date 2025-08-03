@@ -44,7 +44,7 @@ export class ConfigService {
   }
 
   enums(): (string | Record<string, string[]>)[] {
-    const enums = this.config.codegen.options?.enums;
+    const enums = this.config.codegen.enums;
     if (enums instanceof Array) {
       return enums;
     }

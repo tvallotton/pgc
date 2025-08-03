@@ -4,7 +4,13 @@ export interface Catalog {
 
 export interface Schema {
   name: string;
-  tables: Table;
+  enums: Enum[];
+  models: Table[];
+}
+
+export interface Enum {
+  name: string;
+  values: string[];
 }
 
 export interface Table {

@@ -4,6 +4,7 @@ import { FileCollectorService } from "../fs/file_collector.service.ts";
 import { PGService } from "../pg/pg.service.ts";
 import { RawQueryCollector } from "../query_collector/query_collector.servce.ts";
 import { QueryParserService } from "../query_collector/query_parser.service.ts";
+import { ExcluderService } from "../schema_service/excluder.service.ts";
 import { SchemaService } from "../schema_service/schema.service.ts";
 
 export class BuildService {
@@ -25,10 +26,12 @@ export class BuildService {
     const rawQueryCollector = new RawQueryCollector(fileCollectorService);
 
     const queryParser = new QueryParserService(pgService);
+    const excludedService = new ExcluderService(configService);
     const schemaService = new SchemaService(
       pgService,
       fileCollectorService,
       configService,
+      excludedService,
     );
     const codegenService = new CodegenService(configService);
 
@@ -44,7 +47,7 @@ export class BuildService {
   }
 
   async build() {
-    let payload = {
+    const payload = {
       catalog: await this.getCatalog(),
       queries: await this.getQueries(),
       config: this.configService.config,

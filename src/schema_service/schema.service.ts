@@ -1,6 +1,8 @@
 import { ConfigService } from "../config/config.service.ts";
 import type { FileCollectorService } from "../fs/file_collector.service.ts";
 import type { PGService } from "../pg/pg.service.ts";
+import { EnumService } from "./enum.service.ts";
+import { ExcluderService } from "./excluder.service.ts";
 import type { Catalog } from "./schema.types.ts";
 
 export class SchemaService {
@@ -8,6 +10,7 @@ export class SchemaService {
     readonly pgService: PGService,
     readonly fileCollectorService: FileCollectorService,
     readonly configService: ConfigService,
+    readonly excluderService: ExcluderService,
   ) {}
 
   async loadCatalog() {
@@ -22,17 +25,15 @@ export class SchemaService {
 
   private async querySchemas() {
     const query = await this.pgService.pg.query(LOAD_SCHEMA_QUERY) as any;
-
-    return query[0]["result"] as Catalog;
-  }
-
-  private async setTableEnums() {
-    const enums = this.configService.enums();
-
-    for (const enum_ of enums) {
-      if (typeof enum_ == "string") {
-      }
-    }
+    const catalog = query[0]["result"];
+    this.excluderService.removeExcludedModels(catalog);
+    const enumService = new EnumService(
+      this.configService,
+      this.pgService,
+      catalog,
+    );
+    await enumService.setTableBackedEnums();
+    return catalog;
   }
 }
 

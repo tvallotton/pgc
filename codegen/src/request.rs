@@ -84,11 +84,11 @@ pub struct Annotation {
 pub struct OutputColumn {
     pub name: Rc<str>,
     #[serde(rename = "type")]
-    pub type_: QueryType,
+    pub type_: OutputType,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct QueryType {
+pub struct OutputType {
     pub schema: Rc<str>,
     pub name: Rc<str>,
     pub id: i64,
@@ -98,7 +98,7 @@ pub struct QueryType {
 pub struct Parameter {
     pub name: Rc<str>,
     #[serde(rename = "type")]
-    pub type_: QueryType,
+    pub type_: OutputType,
     pub not_null: bool,
 }
 

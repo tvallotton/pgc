@@ -18,9 +18,7 @@ from . import {{subnamespace}}
 {%- for method in query_namespace.methods %}
 
 {{ method.query.name | to_screaming_snake_case }} = """
-{%- filter indent(4) %}
 {{ method.query.query  }}
-{%- endfilter %}
 """
 {%- endfor %}
 {{"\n"}}

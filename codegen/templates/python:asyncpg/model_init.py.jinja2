@@ -6,7 +6,7 @@ from . import {{module}}
 {%- if model_modules["public"] -%}
 from .public import (
 {%- for model_class in model_modules["public"].classes %}
-    {{model_class.type.declaration}},
+    {{model_class.type.declaration}}, # {{model_class.type}}
 {%- endfor %}
 )
 {% endif %}

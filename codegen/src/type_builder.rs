@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::Error,
     r#type::Type,
-    request::{Catalog, Column, ColumnType, QueryType, Request, TypeConfig},
+    request::{Catalog, Column, ColumnType, OutputType, Request, TypeConfig},
     utils::render,
 };
 
@@ -154,11 +154,24 @@ impl TypeBuilder {
         self.resolve(&ty.schema_name, &ty.name)
     }
 
-    pub fn from_query_type(&self, ty: &QueryType) -> Type {
-        self.resolve(&ty.schema, &ty.name)
+    pub fn from_output_type(&self, ty: &OutputType) -> Type {
+        return self.resolve(&ty.schema, &ty.name);
     }
 
     pub fn resolve(&self, type_schema: &Rc<str>, type_name: &Rc<str>) -> Type {
+        if let Some(ty) = self.resolve_from_catalog(type_schema, type_name) {
+            return ty;
+        };
+
+        if !type_name.starts_with('_') {
+            return self.resolve_non_array(type_schema, type_name);
+        }
+
+        let type_name: Rc<str> = type_name.strip_prefix('_').unwrap().into();
+        return self.array(self.resolve_non_array(&type_schema, &type_name), 1);
+    }
+
+    pub fn resolve_non_array(&self, type_schema: &Rc<str>, type_name: &Rc<str>) -> Type {
         if let Some(ty) = self.resolve_from_catalog(type_schema, type_name) {
             return ty;
         };

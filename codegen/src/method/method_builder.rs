@@ -37,7 +37,7 @@ impl MethodBuilder {
 
     pub fn init_input_models(&mut self, query: &Query) {
         for param in query.parameters.iter() {
-            let mut ty = self.type_builder.from_query_type(&param.type_);
+            let mut ty = self.type_builder.from_output_type(&param.type_);
 
             if !param.not_null {
                 ty = self.type_builder.null(&ty);
@@ -80,7 +80,7 @@ impl MethodBuilder {
 
         if query.output.len() == 1 {
             let pg_type = &query.output[0].type_;
-            let output_type = self.type_builder.from_query_type(&pg_type);
+            let output_type = self.type_builder.from_output_type(&pg_type);
             return Some(output_type);
         }
 
@@ -95,7 +95,7 @@ impl MethodBuilder {
             .output
             .iter()
             .map(|column| {
-                let type_ = self.type_builder.from_query_type(&column.type_);
+                let type_ = self.type_builder.from_output_type(&column.type_);
                 (column.name.clone(), type_)
             })
             .collect();

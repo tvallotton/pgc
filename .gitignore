@@ -4,3 +4,4 @@ pgc
 pgc.yaml
 author.sql
 schema.sql
+queries/*

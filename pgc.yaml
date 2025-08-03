@@ -1,12 +1,12 @@
 version: "1"
 
 database:
-  # migrations:
-  #   - schema.sql
-  url: $DB_URL
-  # pglite:
-  #   extensions:
-  #     pg_trgm: "@electric-sql/pglite/contrib/pg_trgm"
+  migrations:
+    - schema.sql
+
+  pglite:
+    extensions:
+      pg_trgm: "@electric-sql/pglite/contrib/pg_trgm"
 queries:
   - "book.sql"
   - "author.sql"
@@ -18,6 +18,7 @@ codegen:
   types:
     pg_catalog.uuid:
       name: str
-
+  enums:
+    - "genre"
   options:
     package: queries

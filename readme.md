@@ -1,4 +1,6 @@
 ## Pgc – PostgreSQL Query Compiler
+*Note pgc is still under development and does not yet ship a stable release.*
+
 
 Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parses SQL queries, validates them against your schema, and generates strongly-typed models and async methods to execute them from your application code.
 

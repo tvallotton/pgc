@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const DatabaseURLSourceConfig = z.object({
-  url: z.string().optional(),
+  url: z.string().optional().nullable(),
   pglite: z.undefined(),
   migrations: z.undefined(),
 });
@@ -31,12 +31,16 @@ const TypeOverride = z.object({
   import: z.string().array().optional(),
 });
 
+const EnumOptions = z.string().or(z.record(z.string(), z.string().array()));
+
 const CodegenConfig = z.object({
   out: z.string(),
   target: z.string(),
-  plugin: PluginConfig.optional(),
-  types: z.record(z.string(), TypeOverride).optional(),
+  plugin: PluginConfig.optional().nullable(),
+  types: z.record(z.string(), TypeOverride).optional().nullable(),
+  exclude_models: z.string().array().optional().nullable(),
   options: z.object({}).passthrough().optional().nullable(),
+  enums: z.array(EnumOptions).optional().nullable(),
 });
 
 export const Config = z.object({

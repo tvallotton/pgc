@@ -5,7 +5,7 @@ use serde_json::json;
 
 use crate::{
     error::Error,
-    request::{self, Column, QueryType, TypeConfig},
+    request::{self, Column, OutputType, TypeConfig},
     utils::render,
 };
 

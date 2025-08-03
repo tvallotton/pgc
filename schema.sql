@@ -9,15 +9,6 @@ create table genre (
     id text primary key
 );
 
-create type genre2 as enum (
-    'comedy',
-    'drama',
-    'science fiction',
-    'fantasy',
-    'biography'
-);
-
-
 create table book (
     id uuid primary key default gen_random_uuid(),
     title text not null,
