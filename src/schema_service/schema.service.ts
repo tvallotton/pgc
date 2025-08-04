@@ -3,7 +3,6 @@ import type { FileCollectorService } from "../fs/file_collector.service.ts";
 import type { PGService } from "../pg/pg.service.ts";
 import { EnumService } from "./enum.service.ts";
 import { ExcluderService } from "./excluder.service.ts";
-import type { Catalog } from "./schema.types.ts";
 
 export class SchemaService {
   constructor(
@@ -114,6 +113,7 @@ const LOAD_SCHEMA_QUERY = `
         AND a.attnum > 0
         AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
         AND n.nspname NOT LIKE 'pg_temp_%'
+      ORDER BY a.attnum
   )
 
   SELECT jsonb_build_object(

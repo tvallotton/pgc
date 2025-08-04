@@ -57,6 +57,7 @@ impl FileGenerator {
                 .get_template(MODEL_SCHEMA_FILE)?
                 .render(context! {
                     imports => module.imports(),
+                    schema => name,
                     models => &module.classes,
                     enums => &module.enums,
                     request => &self.request,

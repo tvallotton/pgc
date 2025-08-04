@@ -35,13 +35,18 @@ class {{method.output_model.type.declaration | to_pascal_case }}:
 {%- if method.query.annotations.group_arguments and method.query.annotations.group_arguments.value == "dataclass" %}
 @dataclasses.dataclass
 class {{ input_model.type.declaration | to_pascal_case }}:
-{%- else %}
-class {{ input_model.type.declaration | to_pascal_case }}(typing.Protocol):
-{%- endif %}
     {%- for field, type in input_model.fields | items %}
     {{field}}: {{type.annotation}}
     {%- endfor %}
 
+{%- else %}
+class {{ input_model.type.declaration | to_pascal_case }}(typing.Protocol):
+    {%- for field, type in input_model.fields | items %}
+    @property
+    def {{field}}(self) -> {{type.annotation}}: ...
+    {%- endfor %}
+
+{%- endif %}
 {% endfor %}
 {%- endfor %}
 
@@ -135,8 +140,18 @@ class {{ query_namespace.name | to_pascal_case }}Queries:
         )
         {{HANDLE_NONE}}
         return row
-
-
+    {%- else %}
+    async def {{method.query.name}}(self
+        {%- for argument, type in method.arguments | items -%}
+            , {{argument}}: {{type.annotation}}
+        {%- endfor -%}
+        ):
+        return await self.connection.execute(
+            {{method.query.name | to_screaming_snake_case }}
+            {%- for parameter in method.query.parameters -%}
+                , {{parameter.name}}
+            {%- endfor %}
+        )
     {%- endif %}
 
     {% endfor %}

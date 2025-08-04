@@ -119,8 +119,9 @@ impl TypeBuilder {
         let type_name = column.foreign_table_name.clone()?;
         let schema_name = column.foreign_table_schema.clone()?;
         let full_name = (schema_name.clone(), type_name.clone());
+
         if self.enums.contains(&full_name) {
-            return Some(self.resolve(&schema_name, &type_name));
+            return Some(self.composite(&schema_name, &type_name));
         }
         return None;
     }

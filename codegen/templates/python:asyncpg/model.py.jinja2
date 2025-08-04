@@ -5,6 +5,7 @@ import enum
 {%- for import in imports %}
 import {{import}}
 {%- endfor %}
+from {{request.config.codegen.options.package}} import models
 
 {%- for enum in enums %}
 
@@ -16,9 +17,16 @@ class {{enum.name | to_pascal_case }}(enum.StrEnum):
 
 {%- for model in models %}
 
+
 @dataclasses.dataclass
 class {{model.type.declaration}}:
     {%- for field, type in model.fields %}
-    {{field}}: {{type.annotation}}
+    {{field}}: {% if type.annotation | starts_with("models." + schema) -%}
+    {{ type.declaration }}
+    {%- elif type.annotation | starts_with("models.") -%}
+    {{ type.annotation | to_c_string }}
+    {%- else -%}
+    {{ type.annotation }}
+    {%- endif %}
     {%- endfor %}
 {%- endfor %}

@@ -13,14 +13,20 @@ pub fn env() -> Environment<'static> {
     env.add_filter("to_kebab_case", to_kebab_case);
     env.add_filter("to_screaming_snake_case", to_screaming_snake_case);
     env.add_filter("to_c_string", to_c_string);
+    env.add_filter("starts_with", starts_with);
     env
 }
 
 pub fn render<T: Serialize>(template: &str, context: T) -> String {
     env().render_named_str("root", template, context).unwrap()
 }
+
 pub fn to_c_string(s: &str) -> String {
     format!("{:?}", s)
+}
+
+pub fn starts_with(text: &str, pattern: &str) -> bool {
+    text.starts_with(pattern)
 }
 
 pub fn to_camel_case(s: &str) -> String {
