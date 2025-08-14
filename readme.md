@@ -108,7 +108,7 @@ When passing multiple arguments (e.g., in INSERT or UPDATE), use field path synt
 * `?(record.field)`: for optional agruments
 
 ```sql
--- @name: upsert
+-- @name: upsert :one
 insert into book
 values (
     $(book.title),
