@@ -21,6 +21,7 @@ impl JinjaEnvironmentBuilder {
     fn query_template(&self) -> Result<&'static str, Error> {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/query.py.jinja2"),
+            "python:psycopg" => include_str!("../templates/python:psycopg/query.py.jinja2"),
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }
@@ -28,6 +29,7 @@ impl JinjaEnvironmentBuilder {
     fn model_template(&self) -> Result<&'static str, Error> {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/model.py.jinja2"),
+            "python:psycopg" => include_str!("../templates/python:psycopg/model.py.jinja2"),
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }
@@ -35,6 +37,7 @@ impl JinjaEnvironmentBuilder {
     fn model_dir_entrypoint_template(&self) -> Result<&'static str, Error> {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/model_init.py.jinja2"),
+            "python:psycopg" => include_str!("../templates/python:psycopg/model_init.py.jinja2"),
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }

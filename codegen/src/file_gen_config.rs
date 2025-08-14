@@ -13,6 +13,7 @@ impl FileGenConfig {
         let target = &request.config.codegen.target;
         let json = match &**target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/config.json"),
+            "python:psycopg" => include_str!("../templates/python:psycopg/config.json"),
             _ => return Err(Error::NotSupportedLanguage(target.clone())),
         };
         Ok(serde_json::from_str(json).unwrap())

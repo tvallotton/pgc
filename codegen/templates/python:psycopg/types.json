@@ -28,7 +28,7 @@
       "int2": { "name": "int" },
       "int4": { "name": "int" },
       "text": { "name": "str" },
-      "json": { "name": "str" },
+      "json": { "name": "dict" },
       "point": { "name": "asyncpg.types.Point", "import": ["asyncpg"] },
       "box": { "name": "asyncpg.pgproto.types.Box", "import": ["asyncpg"] },
       "polygon": {
@@ -64,44 +64,47 @@
       },
       "timetz": { "name": "datetime.time", "import": ["datetime"] },
       "numeric": { "name": "decimal.Decimal", "import": ["decimal"] },
-      "record": { "name": "asyncpg.Record", "import": ["asyncpg"] },
+      "record": { "name": "str" },
       "any": { "name": "typing.Any", "import": ["typing"] },
       "anyarray": { "name": "list[typing.Any]", "import": ["typing"] },
       "anyelement": { "name": "typing.Any", "import": ["typing"] },
       "anynonarray": { "name": "typing.Any", "import": ["typing"] },
       "uuid": { "name": "uuid.UUID", "import": ["uuid"] },
       "anyenum": { "name": "str" },
-      "anyrange": { "name": "asyncpg.Range", "import": ["asyncpg"] },
-      "jsonb": { "name": "str" },
+      "anyrange": {
+        "name": "psycopg.types.range.Range",
+        "import": ["psycopg.types.range"]
+      },
+      "jsonb": { "name": "dict" },
       "int4range": {
-        "name": "asyncpg.types.Range",
-        "annotation": "asyncpg.types.Range[int]",
-        "import": ["asyncpg"]
+        "name": "psycopg.types.range.Range",
+        "annotation": "psycopg.types.range.Range[int]",
+        "import": ["psycopg.types.range"]
       },
       "numrange": {
-        "name": "asyncpg.types.Range",
+        "name": "psycopg.types.range.Range",
         "annotation": "asyncpg.types.Range[float]",
-        "import": ["asyncpg"]
+        "import": ["psycopg.types.range"]
       },
       "tsrange": {
-        "name": "asyncpg.types.Range",
+        "name": "psycopg.types.range.Range",
         "annotation": "asyncpg.types.Range[datetime.datetime]",
-        "import": ["asyncpg", "datetime"]
+        "import": ["psycopg.types.range.Range", "datetime"]
       },
       "tstzrange": {
-        "name": "tstzrange",
-        "annotation": "asyncpg.types.Range[datetime.datetime]",
-        "import": ["asyncpg", "datetime"]
+        "name": "psycopg.types.range.Range",
+        "annotation": "psycopg.types.range.Range[datetime.datetime]",
+        "import": ["psycopg.types.range", "datetime"]
       },
       "daterange": {
-        "name": "asyncpg.types.Range",
+        "name": "psycopg.types.range.Range",
         "annotation": "asyncpg.types.Range[datetime.date]",
-        "import": ["asyncpg", "datetime"]
+        "import": ["psycopg.types.range", "datetime"]
       },
       "int8range": {
-        "name": "asyncpg.types.Range",
-        "annotation": "asyncpg.types.Range[int]",
-        "import": ["asyncpg"]
+        "name": "psycopg.types.range.Range",
+        "annotation": "psycopg.types.range.Range[int]",
+        "import": ["psycopg.types.range"]
       }
     }
   }

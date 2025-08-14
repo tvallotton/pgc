@@ -52,6 +52,12 @@ impl TypeBuilder {
                 catalog: request.catalog.clone(),
                 type_map: PYTHON_ASYNCPG.clone(),
             },
+            "python:psycopg" => TypeBuilder {
+                type_overrides,
+                enums,
+                catalog: request.catalog.clone(),
+                type_map: PYTHON_PSYCOPG.clone(),
+            },
             _ => return Err(Error::NotSupportedLanguage(lang)),
         };
         Ok(resolver)
@@ -228,4 +234,9 @@ impl TypeBuilder {
 const PYTHON_ASYNCPG: LazyLock<TypeMap> = LazyLock::new(|| {
     let json = include_str!("../templates/python:asyncpg/types.json");
     return serde_json::from_str(json).expect("failed to deserialize python:asyncpg/types.json ");
+});
+
+const PYTHON_PSYCOPG: LazyLock<TypeMap> = LazyLock::new(|| {
+    let json = include_str!("../templates/python:psycopg/types.json");
+    return serde_json::from_str(json).expect("failed to deserialize python:psycopg/types.json ");
 });

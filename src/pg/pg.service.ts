@@ -39,8 +39,22 @@ export class PGService {
     try {
       return await this.pg.describe(rawQuery.sql);
     } catch (e) {
-      throw Error(`"${rawQuery.file.path}:${rawQuery.line}" ${e}`);
+      throw this.createErrorMessage(rawQuery, e);
     }
+  }
+
+  createErrorMessage(rawQuery: RawQuery, e: unknown) {
+    const position = Number((e as any).position);
+    const newLines = [...rawQuery.sql.slice(0, position).matchAll(/\n/g)];
+    const snippet = rawQuery.sql.split(`\n`)[newLines.length];
+    const snippetStart = newLines.findLast(() => true)?.index ?? 0;
+    const fileColumnNumber = position - snippetStart;
+    const marker = "^".padStart(fileColumnNumber - 1, " ");
+    const fileLineNumber = rawQuery.line + newLines.length + 1;
+
+    return Error(
+      `"${rawQuery.file.path}:${fileLineNumber}:${fileColumnNumber}": ${e} \n${snippet}\n${marker}`,
+    );
   }
 
   async loadMigrations(migrations: Promise<File>[]) {

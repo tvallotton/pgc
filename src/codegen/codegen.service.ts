@@ -33,9 +33,20 @@ export class CodegenService {
     }
   }
 
+  async clearDirectory(dirPath: string) {
+    for await (const dirEntry of Deno.readDir(dirPath)) {
+      const entryPath = path.join(dirPath, dirEntry.name);
+      if (!dirEntry.isDirectory) {
+        await Deno.remove(entryPath);
+      } else if (dirEntry.isDirectory) {
+        await this.clearDirectory(entryPath);
+        await Deno.remove(entryPath);
+      }
+    }
+  }
+
   async runWasmCodegenModule(payload: object) {
     const utf8JsonPayload = await this.serializePayload(payload);
-    Deno.writeFile("catalog.json", utf8JsonPayload);
     const { instance } = await this.loadPlugin();
     const exports = instance.exports as any;
     let requestPtr = exports.alloc(utf8JsonPayload.length);

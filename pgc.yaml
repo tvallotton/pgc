@@ -12,7 +12,7 @@ queries:
   - "author.sql"
   - "queries.sql"
 codegen:
-  target: python:asyncpg
+  target: python:psycopg
   out: ./queries
 
   types:

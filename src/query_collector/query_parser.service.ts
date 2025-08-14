@@ -44,7 +44,10 @@ export class QueryParserService {
       lines++;
       const match = line.match(ANNOTATION);
       if (!match) continue;
-      annotations[match[1]] = { value: match[2], line: lines + query.line };
+      annotations[match[1]] = {
+        value: match[2] ?? "",
+        line: lines + query.line,
+      };
     }
     return annotations;
   }

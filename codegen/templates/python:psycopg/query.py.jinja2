@@ -4,9 +4,13 @@
 {%- for import in imports %}
 import {{import}}
 {%- endfor %}
-import asyncpg
+import psycopg
 import typing
 import dataclasses
+from psycopg.rows import dict_row
+{%- if query_namespace.name == "" %}
+from psycopg.types.composite import CompositeInfo, register_composite
+{%- endif %}
 from {{request.config.codegen.options.package}} import models
 {%- for subnamespace in query_namespace.subnamespaces %}
 from . import {{subnamespace}}
@@ -15,7 +19,7 @@ from . import {{subnamespace}}
 {%- for method in query_namespace.methods %}
 
 {{ method.query.name | to_screaming_snake_case }} = """
-{{ method.query.query  }}
+{{ method.query.query | regex_replace('\\$(\\d+)', '%(p$1)s') }}
 """
 {%- endfor %}
 {{"\n"}}
@@ -49,7 +53,7 @@ class {{ input_model.type.declaration | to_pascal_case }}(typing.Protocol):
 
 @dataclasses.dataclass
 class {{ query_namespace.name | to_pascal_case }}Queries:
-    def __init__(self, connection: asyncpg.Connection):
+    def __init__(self, connection: psycopg.Connection):
         self.connection = connection
         {%- for subnamespace in  query_namespace.subnamespaces %}
         self.{{subnamespace}} = {{subnamespace}}.{{subnamespace | to_pascal_case }}Queries(connection)
@@ -67,87 +71,89 @@ class {{ query_namespace.name | to_pascal_case }}Queries:
     {%- if method.query.command == 'one' %}
 
     {%- if method.query.output | length == 1 %}
-    async def {{method.query.name}}(self
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ) -> {{method.output_type.annotation}}{{OR_NONE}}:
-        row = await self.connection.fetchrow(
-            {{method.query.name | to_screaming_snake_case }}
+        row = self.connection.execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
-        )
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
+        ).fetchone()
         {{HANDLE_NONE}}
         return row[0]
     {%- else %}
-    async def {{method.query.name}}(self
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ) -> {{method.output_type.annotation}}{{OR_NONE}}:
-        row = await self.connection.fetchrow(
-            {{method.query.name | to_screaming_snake_case }}
+        row = self.connection.cursor(row_factory=dict_row).execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
-        )
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
+        ).fetchone()
         {{HANDLE_NONE}}
         return {{method.output_type.annotation}}(**row)
+
     {%- endif %}
     {%- elif method.query.command == 'many' %}
     {%- if method.query.output | length == 1 %}
-    async def {{method.query.name}}(self
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ) -> list[{{method.output_type.annotation}}]:
-        rows = await self.connection.fetch(
-            {{method.query.name | to_screaming_snake_case }}
+        rows = self.connection.execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
-        )
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
+        ).fetchall()
         return [row[0] for row in rows]
-    {%- else%}
-    async def {{method.query.name}}(self
+    {%- else %}
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ) -> list[{{method.output_type.annotation}}]:
-        rows = await self.connection.fetch(
-            {{method.query.name | to_screaming_snake_case }}
+        rows = self.connection.cursor(row_factory=dict_row).execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
-        )
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
+        ).fetchall()
         return [{{method.output_type.annotation}}(**row) for row in rows]
+
     {%- endif %}
     {%- elif method.query.command == 'val' %}
-    async def {{method.query.name}}(self
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ) -> {{method.output_type.annotation}}{{OR_NONE}}:
-        row = await self.connection.fetchval(
-            {{method.query.name | to_screaming_snake_case }}
+        row = self.connection.execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
-        )
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
+        ).fetchone()
         {{HANDLE_NONE}}
-        return row
+        return row[0]
     {%- else %}
-    async def {{method.query.name}}(self
+    def {{method.query.name}}(self
         {%- for argument, type in method.arguments | items -%}
             , {{argument}}: {{type.annotation}}
         {%- endfor -%}
         ):
-        return await self.connection.execute(
-            {{method.query.name | to_screaming_snake_case }}
+        return self.connection.execute(
+            {{method.query.name | to_screaming_snake_case }}, {
             {%- for parameter in method.query.parameters -%}
-                , {{parameter.name}}
-            {%- endfor %}
+                "p{{loop.index}}": {{parameter.name}} {%- if not loop.last -%}, {% endif -%}
+            {%- endfor %}}
         )
     {%- endif %}
 
@@ -156,16 +162,12 @@ class {{ query_namespace.name | to_pascal_case }}Queries:
 
 
 {%- if query_namespace.name == "" %}
-async def init_connection(conn: asyncpg.Connection):
+def init_connection(conn: psycopg.Connection):
     {%- for _, model_module in model_modules | items %}
     {%- for model in model_module.classes %}
 
-    await conn.set_type_codec(
-        {{model.type.pgtype_name | to_c_string }},
-        encoder=lambda model: ({% for name, _ in model.fields %}model.{{name}}{% if not loop.last %}, {% endif %}{%endfor%}),
-        decoder=lambda row: {{model.type.constructor}}(*row),
-        schema={{model.type.pgtype_schema | to_c_string }},
-        format="tuple",
+    register_composite(
+        CompositeInfo.fetch(conn, "\"{{model.type.pgtype_schema}}\".\"{{model.type.pgtype_name }}\""), conn, {{model.type.constructor}} # type: ignore
     )
     {%- endfor %}
     {% endfor %}
