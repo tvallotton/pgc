@@ -20,7 +20,7 @@ database:
   pglite:
     username: postgres
     database: postgres
-    extensions:
+    extensions: # a mapping of extensions and their source
       pg_trgm: "@electric-sql/pglite/contrib/pg_trgm"
       # for more extensions see https://pglite.dev/extensions/
 ```
@@ -34,7 +34,7 @@ database:
 Migrations will be run in alphabetical order.
 
 ### External Database
-Pgc also supports connecting to an external development database using a postgres uri:
+Pgc also supports connecting to an external development database using a postgres dsn:
 ```yaml
 database:
   url: postgres://postgres:password@127.0.0.1:5432/database
@@ -46,3 +46,30 @@ database:
 ```
 
 ## Codegen
+The codegen section has the following arguments:
+* target (required): A predefined target language and driver pair (e.g. "python:asynpg")
+* out (required): The output directory
+* options (may be required): target specific options (e.g. python requires the `package` option to be defined here.)
+* enums (optional): A list of table backed enums
+* types (optiona): A list of type annotation overrides
+* exclude_models: A list of models to exclude from modeling
+
+```yaml
+codegen:
+  target: python:asyncpg
+  out: ./app/queries
+  enums:
+    - genre
+  types:
+    pg_catalog.json: 
+      name: dict
+    pg_catalog.geometry:
+      name: shapely.Geometry
+      annotation: shapely.Geometry 
+      import: shapely
+  options:
+    package: app.queries
+  exclude_models:
+    - logs
+```
+
