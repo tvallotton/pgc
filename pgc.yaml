@@ -12,12 +12,9 @@ queries:
   - "author.sql"
   - "queries.sql"
 codegen:
-  target: python:psycopg
+  target: typescript:postgres
   out: ./queries
 
-  types:
-    pg_catalog.uuid:
-      name: str
   enums:
     - "genre"
   options:

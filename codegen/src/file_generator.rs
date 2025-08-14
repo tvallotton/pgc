@@ -73,7 +73,12 @@ impl FileGenerator {
     }
 
     fn model_dir_entrypoint(&self) -> Result<Option<File>, Error> {
-        let Some(filename) = self.config.directory_entrypoint.clone() else {
+        let Some(filename) = self
+            .config
+            .directory_entrypoint
+            .clone()
+            .or(self.config.model_dir_entrypoint.clone())
+        else {
             return Ok(None);
         };
 
@@ -136,6 +141,6 @@ impl FileGenerator {
         if let Some(entrypoint) = self.config.directory_entrypoint.as_ref() {
             return entrypoint.clone();
         }
-        return format!("query.{}", self.config.extension);
+        return "query".into();
     }
 }

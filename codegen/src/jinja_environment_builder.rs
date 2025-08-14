@@ -22,6 +22,7 @@ impl JinjaEnvironmentBuilder {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/query.py.jinja2"),
             "python:psycopg" => include_str!("../templates/python:psycopg/query.py.jinja2"),
+            "typescript:postgres" => include_str!("../templates/typescript:postgres/query.jinja2"),
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }
@@ -30,6 +31,7 @@ impl JinjaEnvironmentBuilder {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/model.py.jinja2"),
             "python:psycopg" => include_str!("../templates/python:psycopg/model.py.jinja2"),
+            "typescript:postgres" => include_str!("../templates/typescript:postgres/model.jinja2"),
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }
@@ -38,6 +40,9 @@ impl JinjaEnvironmentBuilder {
         Ok(match &*self.target {
             "python:asyncpg" => include_str!("../templates/python:asyncpg/model_init.py.jinja2"),
             "python:psycopg" => include_str!("../templates/python:psycopg/model_init.py.jinja2"),
+            "typescript:postgres" => {
+                include_str!("../templates/typescript:postgres/model_init.jinja2")
+            }
             _ => return Err(Error::NotSupportedLanguage(self.target.clone())),
         })
     }

@@ -45,22 +45,20 @@ impl TypeBuilder {
                     .map(move |enum_| (schema.name.clone(), enum_.name.clone()))
             })
             .collect();
-        let resolver = match &*lang {
-            "python:asyncpg" => TypeBuilder {
-                type_overrides,
-                enums,
-                catalog: request.catalog.clone(),
-                type_map: PYTHON_ASYNCPG.clone(),
-            },
-            "python:psycopg" => TypeBuilder {
-                type_overrides,
-                enums,
-                catalog: request.catalog.clone(),
-                type_map: PYTHON_PSYCOPG.clone(),
-            },
+
+        let type_map = match &*lang {
+            "python:asyncpg" => PYTHON_ASYNCPG.clone(),
+            "python:psycopg" => PYTHON_PSYCOPG.clone(),
+            "typescript:postgres" => TYPESCRIPT_POSTGRES.clone(),
             _ => return Err(Error::NotSupportedLanguage(lang)),
         };
-        Ok(resolver)
+
+        Ok(TypeBuilder {
+            type_overrides,
+            enums,
+            catalog: request.catalog.clone(),
+            type_map,
+        })
     }
 
     pub fn declared(&self, name: &str) -> Type {
@@ -239,4 +237,10 @@ const PYTHON_ASYNCPG: LazyLock<TypeMap> = LazyLock::new(|| {
 const PYTHON_PSYCOPG: LazyLock<TypeMap> = LazyLock::new(|| {
     let json = include_str!("../templates/python:psycopg/types.json");
     return serde_json::from_str(json).expect("failed to deserialize python:psycopg/types.json ");
+});
+
+const TYPESCRIPT_POSTGRES: LazyLock<TypeMap> = LazyLock::new(|| {
+    let json = include_str!("../templates/typescript:postgres/types.json");
+    return serde_json::from_str(json)
+        .expect("failed to deserialize typescript:postgres/types.json ");
 });

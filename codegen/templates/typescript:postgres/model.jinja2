@@ -1,0 +1,32 @@
+
+{%- if enums %}
+
+{%- endif %}
+{%- for import in imports %}
+{{import}}
+{%- endfor %}
+import type * as models from "./models.ts"
+
+{%- for enum in enums %}
+
+export enum {{enum.name | to_pascal_case }} {
+    {%- for value in enum.values %}
+    {{ value | to_screaming_snake_case }} = {{ value | to_c_string }},
+    {%- endfor %}
+    {% endfor %}
+}
+
+{%- for model in models %}
+
+export interface {{model.type.declaration}} {
+    {%- for field, type in model.fields %}
+    {{field | to_camel_case }}: {% if type.annotation | starts_with("models." + schema) -%}
+    {{ type.annotation | strip_prefix("models." + schema + ".") }}
+    {%- elif type.annotation | starts_with("models.") -%}
+    {{ type.annotation }};
+    {%- else -%}
+    {{ type.annotation }};
+    {%- endif %}
+    {%- endfor %}
+}
+{%- endfor %}
