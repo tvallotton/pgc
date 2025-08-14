@@ -141,23 +141,6 @@ offset coalesce(?offset, 0)
 limit coalesce(?limit, 24)
 ```
 
-## Automatic CRUD
-Enable automatic generation of standard queries (insert, delete, fetch, upsert):
-
-```yaml
-codegen:
-  crud:
-    include: .*
-    exclude:
-      - audit_logs
-```
-Generated methods for each model:
-* get_by_<unique key>
-* delete_by_<unique key>
-* upsert
-* insert
-
-
 ## Foreign key enums
 Instead of using raw enum types in Postgres, prefer foreign-key-backed enums for extensibility:
 ```sql
