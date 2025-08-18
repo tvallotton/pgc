@@ -1,13 +1,8 @@
 import { ConfigService } from "./config.service.ts";
 
-const YAML = `
-version: "1"
-
-env_file:
-  - .env
-
+const YAML = `version: "1"
 schema:
-  migrations: ./migrations
+  migrations: ./migrations/*.sql
   pglite:
     username: postgres
     database: database_name

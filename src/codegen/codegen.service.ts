@@ -36,6 +36,7 @@ export class CodegenService {
   }
 
   async clearDirectory(dirPath: string) {
+    await fs.ensureDir(dirPath);
     for await (const dirEntry of Deno.readDir(dirPath)) {
       const entryPath = path.join(dirPath, dirEntry.name);
       if (!dirEntry.isDirectory) {

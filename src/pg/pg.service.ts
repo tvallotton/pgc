@@ -73,7 +73,7 @@ export class PGService {
   createMigrationErrorMessage(file: File, e: unknown) {
     const error = e as any;
     return new Error(
-      `${error} at ${file.path}\n${file.content} ${error.position} ${error.line}`,
+      `${error.message} at "${file.path}"`,
     );
   }
 
