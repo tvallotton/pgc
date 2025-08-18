@@ -60,7 +60,7 @@ export class PGService {
   async loadMigrations(migrations: Promise<File>[]) {
     for (const migration of migrations) {
       const file = await migration;
-      console.log(file.path);
+
       try {
         await this.pg.execute(file.content);
       } catch (error) {
