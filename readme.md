@@ -4,16 +4,24 @@
 
 Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parses SQL queries, validates them against your schema, and generates strongly-typed models and async methods to execute them from your application code.
 
-# Features
-* Namespacing of queries
-* Row types
-* Grouping query arguments
-* Foreign key enums
+# Getting started
 
+### Install pgc
+Install pgc running the following line:
+```bash
+$ curl -fsSL https://raw.githubusercontent.com/tvallotton/pgc/main/scripts/install.sh | bash
+```
 
-# Examples
-for the following examples, this reference schema is used:
+### Setup config
+Pgc needs a config file to work. You can create a default one with the following command:
+```
+$ pgc init
+```
+
+### Schema
+Pgc needs to know the database schema. Create a `migrations` folder, and create a file named `schema.sql` inside it with the following contents:
 ```sql
+-- migrations/schema.sql
 create table author (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -28,24 +36,76 @@ create table book (
     id uuid primary key default gen_random_uuid(),
     title text not null,
     author_id uuid not null references author(id),
-    year int not null,
-    isbn text not null unique,
     is_best_seller bool default false,
     genre text not null references genre(id)
 );
 
-insert into genre values
-    ('comedy'),
-    ('drama'),
-    ('science fiction'),
-    ('fantasy'),
-    ('biography');
-
+insert into genre values ('comedy'), ('science fiction'), ('fantasy');
 ```
+
+### Queries
+Pgc will look for SQL files at `queries/`. Create a directory named `queries`, and a file named `author.sql` inside it with the following contents:
+```sql
+-- @name: insert :exec
+insert into author values (
+    $(author.id),
+    $(author.name),
+    $(author.birthday)
+);
+
+-- @name: get_by_id :one
+select author from author where id = $id;
+```
+
+
+Finally, run:
+```bash
+$ pgc build
+```
+
+This should create a directory at `package/queries` with python classes for each table, as well as a `Queries` class. 
+Our get by one query can be used as follows:
+```python
+import asyncpg
+from datetime import date
+from package.queries import Queries, init_connection
+from package.queries.models import Author
+from uuid import uuid4
+
+
+
+conn = await asyncpg.connect()
+
+# register type codecs
+await init_connection(conn) 
+
+# create the queries object
+queries = Queries(conn) 
+
+author = Author(
+    id=uuid4(),
+    name="Mary Shelly",
+    birthday=date.today()
+)
+
+await queries.author.insert(author)
+
+author2 = await queries.author.get_by_id(author.id)
+
+assert author2 == author
+```
+The `init_connection` function will register type codecs on the connection so row types can be decoded into models directly. When using a pool the `init=` argument can be used to have the pool initialize every connection.
+
+# Features
+* Namespacing of queries
+* Row types
+* Grouping query arguments
+* Foreign key enums
+
+
 
 ## Introduction
 Pgc is a compiler for postgres (heavily inspired on sqlc), which aims to type check postgres queries and generate models and methods to perform such queries.
-
 
 ## Namespaced queries
 
@@ -112,16 +172,12 @@ insert into book
 values (
     $(book.title),
     $(book.author_id),
-    $(book.year),
-    $(book.isbn),
     $(book.is_best_seller),
     $(book.genre)
 )
 on conflict (id) do update set
     title =          $(book.title),
     author_id =      $(book.author_id),
-    year =           $(book.year),
-    isbn =           $(book.isbn),
     is_best_seller = $(book.is_best_seller),
     genre =          $(book.genre)
 returning book;
