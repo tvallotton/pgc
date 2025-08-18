@@ -16,90 +16,87 @@
     "import": []
   },
   "wildcard": {
-    "name": "typing.Any",
+    "annotation": "typing.Any",
     "import": ["typing"]
   },
   "schema": {
     "pg_catalog": {
-      "bool": { "name": "bool" },
-      "bytea": { "name": "bytes" },
-      "char": { "name": "str" },
-      "int8": { "name": "int" },
-      "int2": { "name": "int" },
-      "int4": { "name": "int" },
-      "text": { "name": "str" },
-      "json": { "name": "str" },
-      "point": { "name": "asyncpg.types.Point", "import": ["asyncpg"] },
-      "box": { "name": "asyncpg.pgproto.types.Box", "import": ["asyncpg"] },
+      "bool": { "annotation": "bool" },
+      "bytea": { "annotation": "bytes" },
+      "char": { "annotation": "str" },
+      "int8": { "annotation": "int" },
+      "int2": { "annotation": "int" },
+      "int4": { "annotation": "int" },
+      "text": { "annotation": "str" },
+      "json": { "annotation": "str" },
+      "point": { "annotation": "asyncpg.types.Point", "import": ["asyncpg"] },
+      "box": {
+        "annotation": "asyncpg.pgproto.types.Box",
+        "import": ["asyncpg"]
+      },
       "polygon": {
-        "name": "asyncpg.pgproto.types.Polygon",
+        "annotation": "asyncpg.pgproto.types.Polygon",
         "import": ["asyncpg"]
       },
       "line": {
-        "name": "asyncpg.pgproto.types.Line",
+        "annotation": "asyncpg.pgproto.types.Line",
         "import": ["asyncpg"]
       },
 
-      "float4": { "name": "float" },
-      "float8": { "name": "float" },
-      "unknown": { "name": "typing.Any", "import": ["typing"] },
+      "float4": { "annotation": "float" },
+      "float8": { "annotation": "float" },
+      "unknown": { "annotation": "typing.Any", "import": ["typing"] },
       "circle": {
-        "name": "asyncpg.pgproto.types.Circle",
+        "annotation": "asyncpg.pgproto.types.Circle",
         "import": ["asyncpg"]
       },
-      "varchar": { "name": "str" },
-      "date": { "name": "datetime.date", "import": ["datetime"] },
-      "time": { "name": "datetime.time", "import": [] },
+      "varchar": { "annotation": "str" },
+      "date": { "annotation": "datetime.date", "import": ["datetime"] },
+      "time": { "annotation": "datetime.time", "import": [] },
       "timestamp": {
-        "name": "datetime.datetime",
+        "annotation": "datetime.datetime",
         "import": ["datetime"]
       },
       "timestamptz": {
-        "name": "datetime.datetime",
+        "annotation": "datetime.datetime",
         "import": ["datetime"]
       },
       "interval": {
-        "name": "datatime.timedelta",
+        "annotation": "datatime.timedelta",
         "import": ["datetime"]
       },
-      "timetz": { "name": "datetime.time", "import": ["datetime"] },
-      "numeric": { "name": "decimal.Decimal", "import": ["decimal"] },
-      "record": { "name": "asyncpg.Record", "import": ["asyncpg"] },
-      "any": { "name": "typing.Any", "import": ["typing"] },
-      "anyarray": { "name": "list[typing.Any]", "import": ["typing"] },
-      "anyelement": { "name": "typing.Any", "import": ["typing"] },
-      "anynonarray": { "name": "typing.Any", "import": ["typing"] },
-      "uuid": { "name": "uuid.UUID", "import": ["uuid"] },
-      "anyenum": { "name": "str" },
-      "anyrange": { "name": "asyncpg.Range", "import": ["asyncpg"] },
-      "jsonb": { "name": "str" },
+      "timetz": { "annotation": "datetime.time", "import": ["datetime"] },
+      "numeric": { "annotation": "decimal.Decimal", "import": ["decimal"] },
+      "record": { "annotation": "asyncpg.Record", "import": ["asyncpg"] },
+      "any": { "annotation": "typing.Any", "import": ["typing"] },
+      "anyarray": { "annotation": "list[typing.Any]", "import": ["typing"] },
+      "anyelement": { "annotation": "typing.Any", "import": ["typing"] },
+      "anynonarray": { "annotation": "typing.Any", "import": ["typing"] },
+      "uuid": { "annotation": "uuid.UUID", "import": ["uuid"] },
+      "anyenum": { "annotation": "str" },
+      "anyrange": { "annotation": "asyncpg.Range", "import": ["asyncpg"] },
+      "jsonb": { "annotation": "str" },
       "int4range": {
-        "name": "asyncpg.types.Range",
         "annotation": "asyncpg.types.Range[int]",
         "import": ["asyncpg"]
       },
       "numrange": {
-        "name": "asyncpg.types.Range",
         "annotation": "asyncpg.types.Range[float]",
         "import": ["asyncpg"]
       },
       "tsrange": {
-        "name": "asyncpg.types.Range",
         "annotation": "asyncpg.types.Range[datetime.datetime]",
         "import": ["asyncpg", "datetime"]
       },
       "tstzrange": {
-        "name": "tstzrange",
         "annotation": "asyncpg.types.Range[datetime.datetime]",
         "import": ["asyncpg", "datetime"]
       },
       "daterange": {
-        "name": "asyncpg.types.Range",
         "annotation": "asyncpg.types.Range[datetime.date]",
         "import": ["asyncpg", "datetime"]
       },
       "int8range": {
-        "name": "asyncpg.types.Range",
         "annotation": "asyncpg.types.Range[int]",
         "import": ["asyncpg"]
       }

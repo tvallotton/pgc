@@ -18,6 +18,8 @@ export class CodegenService {
 
     const outDir = path.join(this.configService.config.codegen?.out, "/");
 
+    await this.clearDirectory(outDir);
+
     for (const file of files) {
       const filePath = path.join(outDir, file.path);
 

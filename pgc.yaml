@@ -17,7 +17,7 @@ codegen:
 
   types:
     pg_catalog.uuid:
-      name: str
+      annotation: str
   enums:
     - "genre"
   options:

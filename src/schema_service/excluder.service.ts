@@ -5,7 +5,7 @@ export class ExcluderService {
   constructor(readonly configService: ConfigService) {}
 
   removeExcludedModels(catalog: Catalog) {
-    const exclude = this.configService.config.codegen.exclude_models ?? [];
+    const exclude = this.configService.config.codegen.exclude_tables ?? [];
     for (const modelName of exclude) {
       const [name, schemaName] = modelName.split(".").reverse();
 

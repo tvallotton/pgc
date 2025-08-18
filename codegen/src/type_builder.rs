@@ -186,9 +186,9 @@ impl TypeBuilder {
         let ty = self.resolve_type_config(&type_schema, &type_name);
 
         Type {
-            declaration: ty.name.clone(),
-            constructor: ty.name.clone(),
-            annotation: ty.annotation.clone().unwrap_or(ty.name.clone()),
+            declaration: Default::default(),
+            constructor: Default::default(),
+            annotation: ty.annotation.clone(),
             import: ty.import.clone(),
             pgtype_name: Some(type_name.clone()),
             pgtype_schema: Some(type_schema.clone()),
@@ -212,7 +212,7 @@ impl TypeBuilder {
             .iter()
             .find(|schema| &schema.name == type_schema)?;
 
-        let model = schema
+        schema
             .models
             .iter()
             .find(|model| &model.name == type_name)?;

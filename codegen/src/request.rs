@@ -120,9 +120,7 @@ pub struct Codegen {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TypeConfig {
-    pub name: Rc<str>,
-    #[serde(default)]
-    pub annotation: Option<Rc<str>>,
+    pub annotation: Rc<str>,
     #[serde(default)]
     pub import: Rc<[Rc<str>]>,
 }

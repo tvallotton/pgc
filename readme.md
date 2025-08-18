@@ -56,12 +56,12 @@ Queries are grouped by file name or an explicit `@namespace` directive:
 -- by default queries on this file will be found at queries.book.*
 
 -- @name: get_by_id :one
-select book.* from book where $id = id;
+select book.* from book where id = $id;
 
 -- @namespace: author
 -- @name: get_books :many
 select book.* from book
-join author on author.id = book.id
+join author on author.id = book.author_id
 where author.id = $author_id
 ```
 Now if we want to access each query we can use:
@@ -77,7 +77,7 @@ select book from book where book.is_best_seller;
 ```
 Then this method can be accessed as:
 ```python
-await queries.book.metrics.get_best_sellers()
+books: list[Book] = await queries.book.metrics.get_best_sellers()
 ```
 
 
@@ -89,7 +89,7 @@ PostgreSQL supports returning composite row types directly. Pgc takes advantage 
 -- @name: get_author_with_books :one
 select author, array_agg(book) as books
 from author
-join book from on author.id = book.author_id
+join book on author.id = book.author_id
 where book.id = $book_id
 group by author.id
 ```

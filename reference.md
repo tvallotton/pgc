@@ -19,7 +19,7 @@ queries:
 ```
 
 ### In-Memory Database
-Pgc uses glite to run an in-memory postgres database. The pglite configuration accepts the following options:
+Pgc uses pglite to run an in-memory postgres database. The pglite configuration accepts the following options:
 ```yaml
 database:
   pglite:
@@ -53,12 +53,12 @@ database:
 
 ## Codegen
 The codegen section has the following arguments:
-* target (required): A predefined target language and driver pair (e.g. "python:asynpg")
+* target (required): A predefined target language and driver pair (e.g. "python:asyncpg")
 * out (required): The output directory
 * options (may be required): target specific options (e.g. python requires the `package` option to be defined here.)
 * enums (optional): A list of table backed enums
 * types (optional): A list of type annotation overrides
-* exclude_models: A list of models to exclude from modeling
+* exclude_tables: A list of tables to exclude from modeling
 
 ```yaml
 codegen:
@@ -75,7 +75,7 @@ codegen:
       import: shapely
   options:
     package: app.queries
-  exclude_models:
+  exclude_tables:
     - logs
 ```
 
