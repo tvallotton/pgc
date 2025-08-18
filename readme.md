@@ -19,7 +19,7 @@ $ pgc init
 ```
 
 ### Schema
-Pgc needs to know the database schema. Create a `migrations` folder, and create a file named `schema.sql` inside it with the following contents:
+Pgc needs to know the database schema to generate models. Create a `migrations` folder, and create a file named `schema.sql` inside it with the following contents:
 ```sql
 -- migrations/schema.sql
 create table author (
