@@ -64,7 +64,7 @@ $ pgc build
 ```
 
 This should create a directory at `package/queries` with python classes for each table, as well as a `Queries` class. 
-Our get by one query can be used as follows:
+Our generated queries can be used as follows:
 ```python
 import asyncpg
 from datetime import date
