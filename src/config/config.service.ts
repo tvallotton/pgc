@@ -76,7 +76,7 @@ export class ConfigService {
     const { migrations } = this.config.database;
     if (migrations == undefined) return [];
     if (typeof migrations == "string") return [migrations];
-    return migrations.sort();
+    return migrations;
   }
 
   checkVersion() {

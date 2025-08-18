@@ -9,7 +9,6 @@ Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parse
 * Row types
 * Grouping query arguments
 * Foreign key enums
-* Wasm plugin support
 
 
 # Examples
