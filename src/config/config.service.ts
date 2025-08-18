@@ -24,11 +24,11 @@ export class ConfigService {
     const { data, error } = Config.safeParse(config);
 
     if (data) {
-      return { configService: new ConfigService(data, file) };
+      return new ConfigService(data, file);
     } else if (error) {
-      return { error: ConfigService.formatErrorMessage(error, file.path) };
+      throw new Error(ConfigService.formatErrorMessage(error, file.path));
     }
-    throw Error("unreachable");
+    throw Error("An unknown error has ocurred.");
   }
 
   static formatErrorMessage(
