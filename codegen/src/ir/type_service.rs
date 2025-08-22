@@ -3,15 +3,25 @@ use std::rc::Rc;
 use super::r#type::Type;
 use crate::{
     ir::model_modules::{Model, ModelModules},
-    request::{Catalog, Column, Record, Request, Schema},
+    request::{Catalog, Column, OutputType, Record, Request, Schema},
 };
-
+#[derive(Clone)]
 pub struct TypeService {
-    catalog: Catalog,
-    model_modules: ModelModules,
+    pub catalog: Catalog,
 }
 
 impl TypeService {
+    pub fn user_defined<'a>(&self, module_path: impl Iterator<Item = &'a str>, name: &str) -> Type {
+        Type::UserDefined {
+            module_path: module_path.map(|str| str.into()).collect(),
+            name: name.into(),
+        }
+    }
+
+    pub fn resolve_from_output(&self, ty: &OutputType) -> Type {
+        self.resolve_from_catalog(&ty.schema, &ty.name)
+    }
+
     pub fn from_column(&self, column: &Column) -> Type {
         let schema_name = &column.type_field.schema_name;
         let column_name = &column.type_field.name;

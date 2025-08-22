@@ -3,22 +3,25 @@ use std::{collections::BTreeMap, mem::take, rc::Rc};
 use indexmap::IndexMap;
 
 use crate::{
-    ir::query_namespace::{Method, MethodModel},
-    r#type::Type,
+    ir::{
+        query_namespace::{Method, MethodModel},
+        r#type::Type,
+        type_service::TypeService,
+    },
     request::Query,
     type_builder::TypeBuilder,
 };
 
 pub struct MethodService {
-    type_builder: TypeBuilder,
+    type_service: TypeService,
     arguments: IndexMap<Rc<str>, Type>,
     input_models: BTreeMap<Rc<str>, MethodModel>,
 }
 
 impl MethodService {
-    pub fn new(type_builder: TypeBuilder) -> Self {
+    pub fn new(type_service: TypeService) -> Self {
         MethodService {
-            type_builder,
+            type_service,
             arguments: Default::default(),
             input_models: Default::default(),
         }
@@ -35,22 +38,12 @@ impl MethodService {
         }
     }
 
-    pub fn create_method(&self, query: &Query) -> Method {
-        Method {
-            query: query.clone(),
-            arguments: self.gather_arguments(query),
-            input_models: self.gather_input_models(query),
-            output_type: self.output_type(query),
-            output_model: self.output_type_model(query),
-        }
-    }
-
     pub fn init_input_models(&mut self, query: &Query) {
         for param in query.parameters.iter() {
-            let mut ty = self.type_builder.from_output_type(&param.type_);
+            let mut ty = self.type_service.resolve_from_output(&param.type_);
 
             if !param.not_null {
-                ty = self.type_builder.null(&ty);
+                ty = Type::Nullable(Rc::new(ty));
             }
 
             if let Some((record, field)) = param.name.split_once('.') {
@@ -65,11 +58,15 @@ impl MethodService {
 
     pub fn include_input_model(&mut self, record: &str, field: &str, ty: Type, query: &Query) {
         let query_name = query.name.clone();
-        let type_builder = self.type_builder.clone();
         let entry = self.input_models.entry(record.into());
 
+        let r#type = self.type_service.user_defined(
+            query.namespace().split('.'),
+            &format!("{}_{}", query_name, record),
+        );
+
         let query_model = entry.or_insert_with(|| MethodModel {
-            r#type: type_builder.declared(&format!("{}_{}", query_name, record)),
+            r#type,
             fields: IndexMap::default(),
         });
 
@@ -90,11 +87,14 @@ impl MethodService {
 
         if query.output.len() == 1 {
             let pg_type = &query.output[0].type_;
-            let output_type = self.type_builder.from_output_type(&pg_type);
+            let output_type = self.type_service.resolve_from_output(&pg_type);
             return Some(output_type);
         }
-
-        Some(self.type_builder.declared(&format!("{}_row", query.name)))
+        let module_path = query.namespace().split('.');
+        Some(
+            self.type_service
+                .user_defined(module_path, &format!("{}_row", query.name)),
+        )
     }
 
     fn output_model(&self, query: &Query) -> Option<MethodModel> {
@@ -105,7 +105,7 @@ impl MethodService {
             .output
             .iter()
             .map(|column| {
-                let type_ = self.type_builder.from_output_type(&column.type_);
+                let type_ = self.type_service.resolve_from_output(&column.type_);
                 (column.name.clone(), type_)
             })
             .collect();

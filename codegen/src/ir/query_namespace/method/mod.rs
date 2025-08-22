@@ -19,8 +19,8 @@ pub struct Method {
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct MethodModel {
-    name: Rc<str>,
-    fields: IndexMap<Rc<str>, Type>,
+    pub r#type: Type,
+    pub fields: IndexMap<Rc<str>, Type>,
 }
 
 impl Method {

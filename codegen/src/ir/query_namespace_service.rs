@@ -1,6 +1,10 @@
 use crate::{
     error::Error,
-    ir::{method_service::MethodService, query_namespace::QueryNamespace},
+    ir::{
+        method_service::MethodService,
+        query_namespace::QueryNamespace,
+        type_service::{self, TypeService},
+    },
     request::{Query, Request},
     type_builder::TypeBuilder,
 };
@@ -13,10 +17,12 @@ pub struct QueryNamespaceBuilder {
 
 impl QueryNamespaceBuilder {
     pub fn new(request: &Request) -> Result<QueryNamespaceBuilder, Error> {
-        let type_builder = TypeBuilder::new(request.clone())?;
+        let type_service = TypeService {
+            catalog: request.catalog.clone(),
+        };
         Ok(QueryNamespaceBuilder {
             request: request.clone(),
-            method_service: MethodService::new(type_builder.clone()),
+            method_service: MethodService::new(type_service.clone()),
             namespace: QueryNamespace::root(),
         })
     }

@@ -1,4 +1,3 @@
-use crate::file_generator::FileGenerator;
 use crate::request::Request;
 use crate::response::{File, Response};
 use error::Error;
@@ -39,10 +38,12 @@ pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
 
 fn try_build(ptr: *mut u8, size: usize) -> Result<impl Serialize, Error> {
     let request = load_request(ptr, size)?;
-    let generator = FileGenerator::new(&request)?;
-    Ok(Response {
-        files: generator.render_files()?,
-    })
+    todo!();
+    Ok(0)
+    // let generator = FileGenerator::new(&request)?;
+    // Ok(Response {
+    //     files: generator.render_files()?,
+    // })
 }
 
 static RESPONSE_LENGTH: AtomicU64 = AtomicU64::new(0);
