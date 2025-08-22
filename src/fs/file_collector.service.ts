@@ -18,8 +18,9 @@ export class FileCollectorService {
 
   async getSQLFiles(patterns: string[]) {
     const promises = [];
+    const paths = [...await this.filePaths(patterns)];
 
-    for (const path of await this.filePaths(patterns)) {
+    for (const path of paths.sort()) {
       const promise: Promise<File> = Deno.readTextFile(path).then((
         content,
       ) => ({

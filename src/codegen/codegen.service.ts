@@ -18,6 +18,8 @@ export class CodegenService {
 
     const outDir = path.join(this.configService.config.codegen?.out, "/");
 
+    await this.clearDirectory(outDir);
+
     for (const file of files) {
       const filePath = path.join(outDir, file.path);
 
@@ -34,6 +36,7 @@ export class CodegenService {
   }
 
   async clearDirectory(dirPath: string) {
+    await fs.ensureDir(dirPath);
     for await (const dirEntry of Deno.readDir(dirPath)) {
       const entryPath = path.join(dirPath, dirEntry.name);
       if (!dirEntry.isDirectory) {

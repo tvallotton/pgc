@@ -7,9 +7,8 @@ Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parse
 # Features
 * Namespacing of queries
 * Row types
-* Grouping arguments into structs
+* Grouping query arguments
 * Foreign key enums
-* Wasm plugin support
 
 
 # Examples
@@ -57,12 +56,12 @@ Queries are grouped by file name or an explicit `@namespace` directive:
 -- by default queries on this file will be found at queries.book.*
 
 -- @name: get_by_id :one
-select book.* from book where $id = id;
+select book.* from book where id = $id;
 
 -- @namespace: author
 -- @name: get_books :many
 select book.* from book
-join author on author.id = book.id
+join author on author.id = book.author_id
 where author.id = $author_id
 ```
 Now if we want to access each query we can use:
@@ -78,7 +77,7 @@ select book from book where book.is_best_seller;
 ```
 Then this method can be accessed as:
 ```python
-await queries.book.metrics.get_best_sellers()
+books: list[Book] = await queries.book.metrics.get_best_sellers()
 ```
 
 
@@ -90,7 +89,7 @@ PostgreSQL supports returning composite row types directly. Pgc takes advantage 
 -- @name: get_author_with_books :one
 select author, array_agg(book) as books
 from author
-join book from on author.id = book.author_id
+join book on author.id = book.author_id
 where book.id = $book_id
 group by author.id
 ```
@@ -108,7 +107,7 @@ When passing multiple arguments (e.g., in INSERT or UPDATE), use field path synt
 * `?(record.field)`: for optional agruments
 
 ```sql
--- @name: upsert
+-- @name: upsert :one
 insert into book
 values (
     $(book.title),
@@ -140,23 +139,6 @@ select * from book
 offset coalesce(?offset, 0)
 limit coalesce(?limit, 24)
 ```
-
-## Automatic CRUD
-Enable automatic generation of standard queries (insert, delete, fetch, upsert):
-
-```yaml
-codegen:
-  crud:
-    include: .*
-    exclude:
-      - audit_logs
-```
-Generated methods for each model:
-* get_by_<unique key>
-* delete_by_<unique key>
-* upsert
-* insert
-
 
 ## Foreign key enums
 Instead of using raw enum types in Postgres, prefer foreign-key-backed enums for extensibility:

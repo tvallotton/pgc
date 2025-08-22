@@ -33,7 +33,7 @@ export class QueryParserService {
         name: name,
         not_null: nullableness == Nullableness.NON_NULL,
         type: inputs[i],
-      })).toArray(),
+      })).filter(({ type }) => type).toArray(),
     };
   }
 

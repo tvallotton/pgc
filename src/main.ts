@@ -12,14 +12,9 @@ program.command("build").description(
   "specify the path of the config file",
   "pgc.yaml",
 ).action(async (options) => {
-  const { error, configService } = ConfigService.fromFilePath(options.file);
-
-  if (!configService) {
-    console.log(error);
-    return;
-  }
   let buildService;
   try {
+    const configService = ConfigService.fromFilePath(options.file);
     buildService = await BuildService.fromConfig(configService);
     await buildService.build();
   } catch (e) {

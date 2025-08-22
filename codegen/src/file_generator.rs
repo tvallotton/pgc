@@ -105,12 +105,17 @@ impl FileGenerator {
         namespace: &QueryNamespace,
         files: &mut Vec<File>,
     ) -> Result<(), Error> {
+        let entrypoint = self.directory_entrypoint();
         if namespace.subnamespaces.is_empty() {
-            let path = dir_path.join(&namespace.name);
+            let name = if namespace.name.is_empty() {
+                &entrypoint
+            } else {
+                &namespace.name
+            };
+            let path = dir_path.join(&name);
             let file = self.render_query_file(&path, namespace)?;
             files.push(file);
         } else {
-            let entrypoint = self.directory_entrypoint();
             let path = dir_path.join(&namespace.name).join(entrypoint);
             let file = self.render_query_file(&path, namespace)?;
             files.push(file);

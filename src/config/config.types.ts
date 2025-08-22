@@ -26,8 +26,7 @@ const PluginConfig = z.object({
 });
 
 const TypeOverride = z.object({
-  name: z.string(),
-  annotation: z.string().optional(),
+  annotation: z.string(),
   import: z.string().array().optional(),
 });
 
@@ -38,7 +37,7 @@ const CodegenConfig = z.object({
   target: z.string(),
   plugin: PluginConfig.optional().nullable(),
   types: z.record(z.string(), TypeOverride).optional().nullable(),
-  exclude_models: z.string().array().optional().nullable(),
+  exclude_tables: z.string().array().optional().nullable(),
   options: z.object({}).passthrough().optional().nullable(),
   enums: z.array(EnumOptions).optional().nullable(),
 });

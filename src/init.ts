@@ -1,6 +1,4 @@
-const INIT_TEMPLATE = `
-version: "1"
-
+const INIT_TEMPLATE = `version: "1"
 database:
   migrations:
     - './migrations/*.sql'

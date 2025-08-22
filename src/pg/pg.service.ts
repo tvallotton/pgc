@@ -39,11 +39,11 @@ export class PGService {
     try {
       return await this.pg.describe(rawQuery.sql);
     } catch (e) {
-      throw this.createErrorMessage(rawQuery, e);
+      throw this.createQueryErrorMessage(rawQuery, e);
     }
   }
 
-  createErrorMessage(rawQuery: RawQuery, e: unknown) {
+  createQueryErrorMessage(rawQuery: RawQuery, e: unknown) {
     const position = Number((e as any).position);
     const newLines = [...rawQuery.sql.slice(0, position).matchAll(/\n/g)];
     const snippet = rawQuery.sql.split(`\n`)[newLines.length];
@@ -59,9 +59,22 @@ export class PGService {
 
   async loadMigrations(migrations: Promise<File>[]) {
     for (const migration of migrations) {
-      await this.pg.execute((await migration).content);
+      const file = await migration;
+
+      try {
+        await this.pg.execute(file.content);
+      } catch (error) {
+        throw this.createMigrationErrorMessage(file, error);
+      }
     }
     this.loadTypes();
+  }
+
+  createMigrationErrorMessage(file: File, e: unknown) {
+    const error = e as any;
+    return new Error(
+      `${error.message} at "${file.path}"`,
+    );
   }
 
   async loadTypes() {

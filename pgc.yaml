@@ -15,6 +15,9 @@ codegen:
   target: typescript:postgres
   out: ./queries
 
+  types:
+    pg_catalog.uuid:
+      annotation: str
   enums:
     - "genre"
   options:
