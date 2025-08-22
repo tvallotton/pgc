@@ -4,9 +4,6 @@ database:
   migrations:
     - schema.sql
 
-  pglite:
-    extensions:
-      pg_trgm: "@electric-sql/pglite/contrib/pg_trgm"
 queries:
   - "book.sql"
   - "author.sql"

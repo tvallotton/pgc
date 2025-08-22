@@ -23,7 +23,7 @@ pub struct Catalog {
 pub struct Schema {
     pub name: Rc<str>,
     pub enums: Rc<[Enum]>,
-    pub models: Rc<[Model]>,
+    pub records: Rc<[Record]>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -33,7 +33,7 @@ pub struct Enum {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Model {
+pub struct Record {
     pub kind: Rc<str>,
     pub name: Rc<str>,
     pub columns: Rc<[Column]>,

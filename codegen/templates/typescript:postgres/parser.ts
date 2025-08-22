@@ -1,30 +1,5 @@
-{%- set reserved = ["abstract","arguments","await","boolean",
-"break","byte","case","catch",
-"char","class","const","continue",
-"debugger","default","delete","do",
-"double","else","enum","eval",
-"export","extends","false","final",
-"finally","float","for","function",
-"goto","if","implements","import",
-"in","instanceof","int","interface",
-"let","long","native","new",
-"null","package","private","protected",
-"public","return","short","static",
-"super","switch","synchronized","this",
-"throw","throws","transient","true",
-"try","typeof","var","void",
-"volatile","while","with","yield"] -%}
-{%- for module in model_modules -%}
-{%- set source = module -%}
-{%- if module in reserved -%}
-{%- set module = "_" + module %}
-{%- endif -%}
-export type * as {{module}} from "./{{source}}.ts";
-{% endfor -%}
-
-export type * from "./public.ts";
-
-
+import { PGlite } from "@electric-sql/pglite";
+const pg = new PGlite();
 type Step = (cell: string) => any;
 
 function trimOuter(str: string, open: string, close: string) {
@@ -238,26 +213,30 @@ export class RowParser<T extends any[] = [], V = T> {
   }
 }
 
+const authorParser = new RowParser()
+  .number()
+  .string()
+  .string()
+  .map(([id, firstName, lastName]) => ({
+    id,
+    firstName,
+    lastName,
+  }));
 
-export const parser = {
-{% for module_name, module in model_modules | items %}
-    {{module_name | to_camel_case }}: {
-    {% for model in module.classes %}
-        {{model.type.declaration | to_camel_case }}() {
-            return new RowParser()
-            {% for field_name, field_type  in model.fields -%}
-                {%  if field_type.annotation == 'Array<string>' -%}
-                .arrayOfString()
-                {%  elif field_type.annotation == 'Array<number>' -%}
-                .arrayOfDate()
-                {%  elif field_type.annotation == 'Array<Date>' -%}
-                .arrayOfDate()
-                {% else -%}
-                .{{field_type.constructor | to_camel_case }}()
-            {% endif -%}
-            {% endfor -%}
-        },
-    {%- endfor %}
-    }
-{% endfor %}
+const parser = {
+  author: new RowParser()
+    .number()
+    .string()
+    .string()
+    .map(([id, firstName, lastName]) => ({
+      id,
+      firstName,
+      lastName,
+    })),
 };
+
+const { rows } = await pg.query(
+  `select array[row(true, 1, null, 'asd""')] as row`,
+);
+
+authorParser.arrayOfThis().parse(rows[0].row);

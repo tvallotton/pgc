@@ -211,7 +211,7 @@ impl TypeBuilder {
             .find(|schema| &schema.name == type_schema)?;
 
         schema
-            .models
+            .records
             .iter()
             .find(|model| &model.name == type_name)?;
 

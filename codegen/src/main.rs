@@ -10,14 +10,12 @@ use std::{slice, sync::atomic::AtomicU64};
 pub mod error;
 pub mod file_gen_config;
 pub mod file_generator;
+pub mod ir;
 pub mod jinja_environment_builder;
-pub mod method;
 pub mod mock;
-pub mod model_modules;
-pub mod query_namespace;
+pub mod presentation;
 pub mod request;
 pub mod response;
-pub mod template_context;
 pub mod r#type;
 pub mod type_builder;
 

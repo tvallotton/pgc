@@ -1,4 +1,3 @@
--- create extension pg_trgm;
 create table author (
   id uuid primary key default gen_random_uuid(),
   name text not null,

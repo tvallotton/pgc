@@ -9,6 +9,9 @@ pub enum Error {
     #[error("language {0} is not supported.")]
     NotSupportedLanguage(Rc<str>),
 
+    #[error("the language {language} requires the configuration option codegen.options.{option} to be present.")]
+    MissingConfigurationOption { language: Rc<str>, option: Rc<str> },
+
     #[error("failed to render or parse a template: {0}.\nThis is a bug in pgc, please report the issue at \"https://github.com/tvallotton/pgc\".")]
     TemplateError(#[from] minijinja::Error),
 }

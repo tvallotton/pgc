@@ -1,14 +1,13 @@
 use crate::{
     error::Error,
-    method::MethodBuilder,
-    query_namespace::QueryNamespace,
+    ir::{method_service::MethodService, query_namespace::QueryNamespace},
     request::{Query, Request},
     type_builder::TypeBuilder,
 };
 
 pub struct QueryNamespaceBuilder {
     request: Request,
-    method_builder: MethodBuilder,
+    method_service: MethodService,
     namespace: QueryNamespace,
 }
 
@@ -17,7 +16,7 @@ impl QueryNamespaceBuilder {
         let type_builder = TypeBuilder::new(request.clone())?;
         Ok(QueryNamespaceBuilder {
             request: request.clone(),
-            method_builder: MethodBuilder::new(type_builder.clone()),
+            method_service: MethodService::new(type_builder.clone()),
             namespace: QueryNamespace::root(),
         })
     }
@@ -33,7 +32,7 @@ impl QueryNamespaceBuilder {
     pub fn include_query(&mut self, query: &Query) {
         let name = query.namespace();
         let namespace = self.namespace.resolve(name);
-        namespace.methods.push(self.method_builder.build(query));
+        namespace.methods.push(self.method_service.build(query));
     }
 }
 

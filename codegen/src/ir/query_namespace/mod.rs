@@ -2,11 +2,16 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-
-use crate::{error::Error, method::Method, request::Request, utils::to_pascal_case};
-pub use query_namespace_builder::QueryNamespaceBuilder;
+mod method;
+use crate::{
+    error::Error,
+    ir::{query_namespace_service::QueryNamespaceBuilder, r#type::Type},
+    request::Request,
+    utils::to_pascal_case,
+};
+pub use method::Method;
+pub use method::MethodModel;
 use serde::{Deserialize, Serialize};
-mod query_namespace_builder;
 
 #[derive(Serialize, Deserialize)]
 pub struct QueryNamespace {
@@ -20,7 +25,7 @@ impl QueryNamespace {
         Ok(QueryNamespaceBuilder::new(request)?.build())
     }
 
-    fn root() -> QueryNamespace {
+    pub fn root() -> QueryNamespace {
         QueryNamespace {
             name: String::new(),
             subnamespaces: Default::default(),
@@ -28,10 +33,10 @@ impl QueryNamespace {
         }
     }
 
-    pub fn imports(&self) -> BTreeSet<&str> {
+    pub fn used_types(&self) -> BTreeSet<Type> {
         self.methods
             .iter()
-            .flat_map(|method| method.imports())
+            .flat_map(|method| method.used_types())
             .collect()
     }
 
