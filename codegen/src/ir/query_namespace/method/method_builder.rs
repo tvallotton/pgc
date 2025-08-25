@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, mem::take, rc::Rc};
+use std::{collections::BTreeMap, mem::take, sync::Arc};
 
 use indexmap::IndexMap;
 
@@ -11,8 +11,8 @@ use crate::{
 
 pub struct MethodBuilder {
     type_builder: TypeBuilder,
-    arguments: IndexMap<Rc<str>, Type>,
-    input_models: BTreeMap<Rc<str>, MethodModel>,
+    arguments: IndexMap<Arc<str>, Type>,
+    input_models: BTreeMap<Arc<str>, MethodModel>,
 }
 
 impl MethodBuilder {

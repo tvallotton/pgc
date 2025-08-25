@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
@@ -10,14 +10,14 @@ use crate::{
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Model {
     pub record: Record,
-    pub module_name: Rc<str>,
-    pub name: Rc<str>,
+    pub module_name: Arc<str>,
+    pub name: Arc<str>,
     pub fields: Vec<ModelField>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ModelField {
-    pub name: Rc<str>,
+    pub name: Arc<str>,
     pub r#type: Type,
-    pub default_value: Option<Rc<str>>,
+    pub default_value: Option<Arc<str>>,
 }

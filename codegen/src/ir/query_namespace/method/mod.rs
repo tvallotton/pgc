@@ -1,6 +1,6 @@
 use std::{
     collections::{btree_map::Entry, BTreeMap},
-    rc::Rc,
+    sync::Arc,
 };
 
 use indexmap::IndexMap;
@@ -11,8 +11,8 @@ use crate::{ir::r#type::Type, request::Query};
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Method {
     pub query: Query,
-    pub arguments: IndexMap<Rc<str>, Type>,
-    pub input_models: BTreeMap<Rc<str>, MethodModel>,
+    pub arguments: IndexMap<Arc<str>, Type>,
+    pub input_models: BTreeMap<Arc<str>, MethodModel>,
     pub output_type: Option<Type>,
     pub output_model: Option<MethodModel>,
 }
@@ -20,7 +20,7 @@ pub struct Method {
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct MethodModel {
     pub r#type: Type,
-    pub fields: IndexMap<Rc<str>, Type>,
+    pub fields: IndexMap<Arc<str>, Type>,
 }
 
 impl Method {

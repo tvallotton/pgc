@@ -1,6 +1,6 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
-    rc::Rc,
+    sync::Arc,
 };
 mod method;
 use crate::{
@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct QueryNamespace {
     pub name: String,
-    pub subnamespaces: BTreeMap<Rc<str>, QueryNamespace>,
+    pub subnamespaces: BTreeMap<Arc<str>, QueryNamespace>,
     pub methods: Vec<Method>,
 }
 

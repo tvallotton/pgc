@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, rc::Rc, sync::LazyLock};
+use std::{collections::BTreeMap, sync::Arc, sync::LazyLock};
 
 use serde::Deserialize;
 use serde_json::json;
@@ -12,13 +12,13 @@ use crate::{
 #[derive(serde::Serialize, Deserialize, Clone, Debug)]
 pub struct Type {
     #[serde(default)]
-    pub declaration: Rc<str>,
+    pub declaration: Arc<str>,
     #[serde(default)]
-    pub annotation: Rc<str>,
+    pub annotation: Arc<str>,
     #[serde(default)]
-    pub constructor: Rc<str>,
+    pub constructor: Arc<str>,
     #[serde(default)]
-    pub import: Rc<[Rc<str>]>,
-    pub pgtype_name: Option<Rc<str>>,
-    pub pgtype_schema: Option<Rc<str>>,
+    pub import: Arc<[Arc<str>]>,
+    pub pgtype_name: Option<Arc<str>>,
+    pub pgtype_schema: Option<Arc<str>>,
 }

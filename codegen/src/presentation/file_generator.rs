@@ -19,6 +19,7 @@ impl FileGeneratorService {
     fn files(&self) -> Result<Vec<File>, Error> {
         let mut files = self.model_module_files()?;
         self.add_query_files(&mut files);
+        files.push(self.add_model_entrypoint()?);
         return Ok(files);
     }
 
@@ -27,7 +28,6 @@ impl FileGeneratorService {
         for module in self.ir.model_modules.model_modules.values() {
             self.add_model_module_file(&mut files, module)?;
         }
-
         Ok(files)
     }
 
@@ -49,6 +49,17 @@ impl FileGeneratorService {
             content,
         });
         Ok(())
+    }
+
+    fn add_model_entrypoint(&self) -> Result<File, Error> {
+        let content = self
+            .environment
+            .get_template("model_dir")?
+            .render(context!(
+                ir => self.ir,
+            ))?;
+        let path = format!("models/{}", self.config.model_directory_entrypoint);
+        Ok(File { path, content })
     }
 
     pub fn add_query_files(&self, files: &mut Vec<File>) {

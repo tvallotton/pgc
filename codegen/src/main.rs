@@ -7,20 +7,16 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::{slice, sync::atomic::AtomicU64};
 
 pub mod error;
-pub mod file_gen_config;
-pub mod file_generator;
 pub mod ir;
-pub mod jinja_environment_builder;
 pub mod mock;
 pub mod presentation;
 pub mod request;
 pub mod response;
 pub mod r#type;
-pub mod type_builder;
 
 mod utils;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn alloc(size: usize) -> *mut u8 {
     let mut buffer = Vec::with_capacity(size);
     let ptr = buffer.as_mut_ptr();
@@ -28,7 +24,7 @@ pub extern "C" fn alloc(size: usize) -> *mut u8 {
     ptr
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
     match try_build(ptr, size) {
         Ok(value) => write_response(value),
@@ -55,7 +51,7 @@ fn write_response<T: Serialize>(response: T) -> *const u8 {
     buffer.leak().as_bytes().as_ptr()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn response_length() -> u64 {
     RESPONSE_LENGTH.load(Relaxed)
 }

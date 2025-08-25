@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, mem::take, rc::Rc};
+use std::{collections::BTreeMap, mem::take, sync::Arc};
 
 use indexmap::IndexMap;
 
@@ -9,13 +9,12 @@ use crate::{
         type_service::TypeService,
     },
     request::Query,
-    type_builder::TypeBuilder,
 };
 
 pub struct MethodService {
     type_service: TypeService,
-    arguments: IndexMap<Rc<str>, Type>,
-    input_models: BTreeMap<Rc<str>, MethodModel>,
+    arguments: IndexMap<Arc<str>, Type>,
+    input_models: BTreeMap<Arc<str>, MethodModel>,
 }
 
 impl MethodService {
@@ -43,7 +42,7 @@ impl MethodService {
             let mut ty = self.type_service.resolve_from_output(&param.type_);
 
             if !param.not_null {
-                ty = Type::Nullable(Rc::new(ty));
+                ty = Type::Nullable(Arc::new(ty));
             }
 
             if let Some((record, field)) = param.name.split_once('.') {

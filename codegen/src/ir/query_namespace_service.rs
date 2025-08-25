@@ -6,7 +6,6 @@ use crate::{
         type_service::{self, TypeService},
     },
     request::{Query, Request},
-    type_builder::TypeBuilder,
 };
 
 pub struct QueryNamespaceBuilder {

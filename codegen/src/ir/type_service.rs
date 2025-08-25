@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::r#type::Type;
 use crate::{
@@ -34,13 +34,13 @@ impl TypeService {
 
         if column.type_field.is_array {
             r#type = Type::Array {
-                r#type: Rc::new(r#type),
+                r#type: Arc::new(r#type),
                 dim: column.type_field.array_dimensions,
             };
         }
 
         if column.is_nullable {
-            r#type = Type::Nullable(Rc::new(r#type));
+            r#type = Type::Nullable(Arc::new(r#type));
         }
 
         return r#type;
@@ -51,7 +51,7 @@ impl TypeService {
         self.resolve_enum(schema, column.foreign_table_name.as_ref()?)
     }
 
-    fn resolve_from_catalog(&self, schema_name: &Rc<str>, name: &Rc<str>) -> Type {
+    fn resolve_from_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Type {
         if &**schema_name == "pg_catalog" {
             return self.from_pg_catalog(&name);
         }
@@ -59,25 +59,25 @@ impl TypeService {
             .unwrap_or(Type::Any)
     }
 
-    fn from_user_defined_catalog(&self, schema_name: &Rc<str>, name: &Rc<str>) -> Option<Type> {
+    fn from_user_defined_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Option<Type> {
         let schema = self.get_schema(schema_name)?;
 
         self.resolve_record(schema, name)
             .or_else(|| self.resolve_enum(schema, name))
     }
 
-    fn resolve_enum(&self, schema: &Schema, name: &Rc<str>) -> Option<Type> {
+    fn resolve_enum(&self, schema: &Schema, name: &Arc<str>) -> Option<Type> {
         schema.enums.iter().find(|enum_| enum_.name == *name)?;
         Some(self.user_defined_model(schema, name))
     }
 
-    fn resolve_record(&self, schema: &Schema, name: &Rc<str>) -> Option<Type> {
+    fn resolve_record(&self, schema: &Schema, name: &Arc<str>) -> Option<Type> {
         schema.records.iter().find(|record| record.name == *name)?;
         Some(self.user_defined_model(schema, name))
     }
 
-    fn user_defined_model(&self, schema: &Schema, name: &Rc<str>) -> Type {
-        let module_path = Rc::new(["models".into(), schema.name.clone()]);
+    fn user_defined_model(&self, schema: &Schema, name: &Arc<str>) -> Type {
+        let module_path = Arc::new(["models".into(), schema.name.clone()]);
         Type::UserDefined {
             module_path,
             name: name.clone(),
@@ -91,83 +91,11 @@ impl TypeService {
             .find(|schema| &*schema.name == schema_name)
     }
 
-    fn from_pg_catalog(&self, name: &str) -> Type {
-        match name {
-            "bool" => Type::Bool,
-            "uuid" => Type::Uuid,
-            "text" => Type::Text,
-            "varchar" => Type::VarChar,
-            "bpchar" => Type::BpChar,
-            "bytea" => Type::Bytea,
-            "int2" => Type::Int2,
-            "int4" => Type::Int4,
-            "int8" => Type::Int8,
-            "serial2" => Type::Serial2,
-            "serial4" => Type::Serial4,
-            "serial8" => Type::Serial8,
-            "decimal" => Type::Decimal,
-            "numeric" => Type::Numeric,
-            "money" => Type::Money,
-            "float4" => Type::Float4,
-            "float8" => Type::Float8,
-            "timestamp" => Type::Timestamp,
-            "date" => Type::Date,
-            "time" => Type::Time,
-            "timestamptz" => Type::TimestampTz,
-            "datetz" => Type::DateTz,
-            "timetz" => Type::TimeTz,
-            "range" => Type::Range,
-            "interval" => Type::Interval,
-            "int4range" => Type::Int4Range,
-            "int8range" => Type::Int8Range,
-            "numrange" => Type::NumRange,
-            "tsrange" => Type::TsRange,
-            "tstzrange" => Type::TsTzRange,
-            "daterange" => Type::DateRange,
-            "datemultirange" => Type::DateMultiRange,
-            "int4multirange" => Type::Int4MultiRange,
-            "int8multirange" => Type::Int8MultiRange,
-            "nummultirange" => Type::NumMultiRange,
-            "tsmultirange" => Type::TsMultiRange,
-            "tstzmultirange" => Type::TsTzMultiRange,
-            "point" => Type::Point,
-            "line" => Type::Line,
-            "lseg" => Type::LSeg,
-            "box" => Type::Box,
-            "path" => Type::Path,
-            "polygon" => Type::Polygon,
-            "circle" => Type::Circle,
-            "cid" => Type::Cid,
-            "cidr" => Type::Cidr,
-            "inet" => Type::Inet,
-            "macaddr" => Type::MacAddr,
-            "macaddr8" => Type::MacAddr8,
-            "bit" => Type::Bit,
-            "bitvarying" => Type::BitVarying,
-            "tsvector" => Type::TsVector,
-            "tsquery" => Type::TsQuery,
-            "xml" => Type::Xml,
-            "json" => Type::Json,
-            "jsonb" => Type::Jsonb,
-            "jsonpath" => Type::JsonPath,
-            "any" => Type::Any,
-            "anyarray" => Type::AnyArray,
-            "anyelement" => Type::AnyElement,
-            "anynonarray" => Type::AnyNonArray,
-            "anyenum" => Type::AnyEnum,
-            "anyrange" => Type::AnyRange,
-            "anymultirange" => Type::AnyMultiRange,
-            "anycompatible" => Type::AnyCompatible,
-            "anycompatiblearray" => Type::AnyCompatibleArray,
-            "anycompatiblemultirange" => Type::AnyCompatibleMultiRange,
-            "anycompatiblenonarray" => Type::AnyCompatibleNonArray,
-            "anycompatiblerange" => Type::AnycompatibleRange,
-            "cstring" => Type::Cstring,
-            "internal" => Type::Internal,
-            "record" => Type::Record,
-            "void" => Type::Void,
-            "unknown" => Type::Unknown,
-            _ => Type::Any,
-        }
+    fn from_pg_catalog(&self, type_name: &str) -> Type {
+        Type::NAMES
+            .iter()
+            .find(|(name, _, _)| *name == type_name)
+            .map(|(_, _, ty)| ty.clone())
+            .unwrap_or(Type::Any)
     }
 }

@@ -1,9 +1,16 @@
-// use crate::{ir::Ir, request::Request};
+use crate::{ir::Ir, request::Request};
 
-// mod python;
-// mod typescript;
+mod python;
+mod typescript;
 
-// pub trait FileGenerator {
-//     fn new(ir: Ir) -> Self;
-//     fn generate_files(self) -> Vec<File>;
+mod file_generation_config;
+mod file_generator;
+mod type_mapping_service;
+
+mod environment;
+
+// pub fn generate_files(ir: Ir) {
+//     match ir.request.config.codegen {
+//         "python" =>
+//     }
 // }

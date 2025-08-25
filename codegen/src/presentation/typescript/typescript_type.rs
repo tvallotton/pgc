@@ -1,6 +1,6 @@
 pub struct TypescriptType {
-    module: Rc<str>,
-    import: Rc<str>,
-    annotation: Rc<str>,
-    name: Rc<str>,
+    module: Arc<str>,
+    import: Arc<str>,
+    annotation: Arc<str>,
+    name: Arc<str>,
 }

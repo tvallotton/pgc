@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{
     ir::{
@@ -35,7 +35,7 @@ impl ModelService {
         return module;
     }
 
-    fn create_model_from_record(&self, module_name: &Rc<str>, record: &Record) -> Model {
+    fn create_model_from_record(&self, module_name: &Arc<str>, record: &Record) -> Model {
         let mut model = Model {
             record: record.clone(),
             module_name: module_name.clone(),
