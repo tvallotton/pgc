@@ -10,16 +10,19 @@ use crate::{
 
 pub struct ModelService {
     pub type_service: TypeService,
+    pub catalog: Catalog,
 }
 
 impl ModelService {
-    pub fn create_model_modules(&self, catalog: &Catalog) {
+    pub fn create_model_modules(&self) -> ModelModules {
         let mut modules = ModelModules::default();
 
-        for schema in catalog.schemas.iter() {
+        for schema in self.catalog.schemas.iter() {
             let module = self.create_model_module(schema);
             modules.model_modules.insert(schema.name.clone(), module);
         }
+
+        modules
     }
 
     fn create_model_module(&self, schema: &Schema) -> ModelModule {

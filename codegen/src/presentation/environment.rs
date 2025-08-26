@@ -1,38 +1,78 @@
 use std::{
     collections::BTreeMap,
+    panic::{AssertUnwindSafe, catch_unwind},
     sync::{Arc, Mutex},
 };
 
 use heck::{ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
-use minijinja::{Environment, State, Value};
+use indexmap::map::serde_seq::deserialize;
+use minijinja::{Environment, State, Value, context, value::Object};
 use regex::bytes::Regex;
+use serde::{Deserialize, Deserializer, Serialize, de::IntoDeserializer};
 
-use crate::{ir::Type, presentation::type_mapping_service::TypeMapService};
+use crate::{
+    error::Error,
+    ir::{Ir, Type},
+    presentation::{
+        file_generation_config::TemplateGenConfig,
+        type_mapping_service::{OverriddenTypeMapService, TypeMapService},
+    },
+};
 
-pub fn env(service: Arc<dyn TypeMapService>) -> Environment<'static> {
+pub fn env(ir: Ir, config: TemplateGenConfig) -> Result<Environment<'static>, Error> {
     let mut env = minijinja::Environment::new();
+
+    add_templates(&mut env, config)?;
+    add_string_filters(&mut env);
+    add_type_filters(&mut env, ir, config);
+
+    Ok(env)
+}
+
+pub fn add_type_filters(env: &mut Environment<'static>, ir: Ir, config: TemplateGenConfig) {
+    let service = Arc::new(OverriddenTypeMapService::new(ir, config.type_map_service));
+
     let service_ = service.clone();
-    env.add_filter("annotation", move |state: &State, ty: &Type| -> Arc<str> {
-        service_.get(module_path(state), ty).annotation
+
+    env.add_filter("annotation", move |state: &State, ty: Value| -> Arc<str> {
+        service_.get(module_path(state), &as_type(ty)).annotation
     });
+
     let service_ = service.clone();
+
     env.add_filter(
         "name",
-        move |state: &State, ty: &Type| -> Option<Arc<str>> {
-            service_.get(module_path(state), ty).name
+        move |state: &State, ty: Value| -> Option<Arc<str>> {
+            service_.get(module_path(state), &as_type(ty)).name
         },
     );
     let service_ = service.clone();
-    env.add_filter("import", move |state: &State, ty: &Type| -> Vec<Arc<str>> {
-        service_.get(module_path(state), ty).import
-    });
+    env.add_filter(
+        "imports",
+        move |state: &State, ty: Value| -> Vec<Arc<str>> {
+            service_.get(module_path(state), &as_type(ty)).import
+        },
+    );
     let service_ = service.clone();
     env.add_filter(
         "type_module",
-        move |state: &State, ty: &Type| -> Option<Arc<str>> {
-            service_.get(module_path(state), ty).module
+        move |state: &State, ty: Value| -> Option<Arc<str>> {
+            service_.get(module_path(state), &as_type(ty)).module
         },
     );
+}
+
+pub fn add_templates(
+    env: &mut Environment<'static>,
+    config: TemplateGenConfig,
+) -> Result<(), Error> {
+    env.add_template("query", config.query_template)?;
+    env.add_template("model", config.model_template)?;
+    env.add_template("model_init", config.model_init_template)?;
+    Ok(())
+}
+
+pub fn add_string_filters(env: &mut Environment<'static>) {
     env.add_filter("to_camel_case", to_camel_case);
     env.add_filter("to_pascal_case", to_pascal_case);
     env.add_filter("to_snake_case", to_snake_case);
@@ -42,16 +82,26 @@ pub fn env(service: Arc<dyn TypeMapService>) -> Environment<'static> {
     env.add_filter("starts_with", starts_with);
     env.add_filter("strip_prefix", strip_prefix);
     env.add_filter("regex_replace", regex_replace);
-    env
 }
 
-pub fn module_path<'a>(state: &State<'_, 'a>) -> Arc<[Arc<str>]> {
-    state
-        .lookup("module_path")
-        .unwrap()
-        .downcast_object_ref::<Arc<[Arc<str>]>>()
-        .unwrap()
-        .clone()
+pub fn module_path<'a>(state: &State<'_, 'a>) -> Vec<String> {
+    use serde::de::value::SeqDeserializer;
+    let this_module = state.lookup("this_module").unwrap();
+    return <Vec<String>>::deserialize(SeqDeserializer::new(this_module.try_iter().unwrap()))
+        .unwrap();
+}
+
+pub fn as_type(value: Value) -> Type {
+    let Ok(value) = serde_json::to_value(value) else {
+        return Type::AnyEnum;
+    };
+    match serde_json::from_value(value) {
+        Ok(ty) => ty,
+        Err(err) => Type::Other {
+            schema: format!("{err:?}").into(),
+            name: "failed".into(),
+        },
+    }
 }
 
 pub fn regex_replace(text: &str, pattern: &str, replacement: &str) -> String {
@@ -97,4 +147,17 @@ pub fn to_screaming_snake_case(s: &str) -> String {
 
 pub fn to_kebab_case(s: &str) -> String {
     s.to_kebab_case()
+}
+
+#[test]
+fn foo() {
+    let mut env = Environment::new();
+
+    env.add_filter("foo", |ty: &Value| {
+        let ty: Type = serde_json::from_value(serde_json::to_value(ty).unwrap()).unwrap();
+        "works"
+    });
+
+    let content = env.render_str("{{ x | foo }}", context! { x => Type::MacAddr});
+    assert!(content.unwrap().contains("works"));
 }

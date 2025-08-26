@@ -1,10 +1,7 @@
 use std::sync::Arc;
 
 use super::r#type::Type;
-use crate::{
-    ir::model_modules::{Model, ModelModules},
-    request::{Catalog, Column, OutputType, Record, Request, Schema},
-};
+use crate::request::{Catalog, Column, OutputType, Schema};
 #[derive(Clone)]
 pub struct TypeService {
     pub catalog: Catalog,
@@ -97,5 +94,45 @@ impl TypeService {
             .find(|(name, _, _)| *name == type_name)
             .map(|(_, _, ty)| ty.clone())
             .unwrap_or(Type::Any)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        ir::{Type, TypeService},
+        mock::{self, records, schema},
+    };
+
+    fn type_service() -> TypeService {
+        TypeService {
+            catalog: mock::catalog(),
+        }
+    }
+
+    #[test]
+    fn type_service_user_defined_model() {
+        let type_service = type_service();
+        let schema = schema();
+        let record = &schema.records[0];
+        let user_defined = type_service.user_defined_model(&schema, &record.name);
+        let Type::UserDefined { name, .. } = user_defined else {
+            unreachable!()
+        };
+        assert_eq!(name, record.name);
+    }
+
+    #[test]
+    fn type_service_get_schema() {
+        let type_service = type_service();
+        let name = "public";
+        let schema = type_service.get_schema(name).unwrap();
+        assert_eq!(&*schema.name, name);
+    }
+
+    #[test]
+    fn type_service_from_pg_catalog() {
+        let type_service = type_service();
+        assert_eq!(type_service.from_pg_catalog("int4range"), Type::Int4Range)
     }
 }

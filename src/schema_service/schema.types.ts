@@ -5,7 +5,7 @@ export interface Catalog {
 export interface Schema {
   name: string;
   enums: Enum[];
-  models: Table[];
+  records: Table[];
 }
 
 export interface Enum {

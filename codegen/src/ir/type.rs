@@ -1,14 +1,10 @@
 use std::sync::Arc;
 
-use minijinja::value::{Object, ObjectRepr};
+use minijinja::value::{Enumerator, Object, ObjectRepr};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    ir::model_modules::Model,
-    request::{Column, Enum, Record},
-};
-
 #[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug, Serialize, Deserialize)]
+#[serde(tag = "t", content = "c")]
 pub enum Type {
     // A type not matching any of these
     Other {
@@ -208,6 +204,10 @@ impl Object for Type {
     fn repr(self: &Arc<Self>) -> minijinja::value::ObjectRepr {
         ObjectRepr::Plain
     }
+
+    // fn enumerate(self: &Arc<Self>) -> minijinja::value::Enumerator {
+    //     Enumerator::Str(&[])
+    // }
 }
 
 #[test]

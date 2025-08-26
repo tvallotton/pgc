@@ -5,15 +5,14 @@ use std::{
 mod method;
 use crate::{
     error::Error,
-    ir::{query_namespace_service::QueryNamespaceBuilder, r#type::Type},
+    ir::{query_namespace_service::QueryNamespaceService, r#type::Type},
     request::Request,
-    utils::to_pascal_case,
 };
 pub use method::Method;
 pub use method::MethodModel;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct QueryNamespace {
     pub name: String,
     pub subnamespaces: BTreeMap<Arc<str>, QueryNamespace>,
@@ -22,7 +21,7 @@ pub struct QueryNamespace {
 
 impl QueryNamespace {
     pub fn from_request(request: &Request) -> Result<Self, Error> {
-        Ok(QueryNamespaceBuilder::new(request)?.build())
+        Ok(QueryNamespaceService::new(request)?.build())
     }
 
     pub fn root() -> QueryNamespace {

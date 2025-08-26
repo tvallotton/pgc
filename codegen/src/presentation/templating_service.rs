@@ -1,26 +1,40 @@
 use std::sync::Arc;
 
-use minijinja::{context, Environment};
+use minijinja::{Environment, context};
 
 use crate::{
     error::Error,
     ir::{Ir, ModelModule, QueryNamespace},
-    presentation::python::file_generation_config::FileGenerationConfig,
+    presentation::{
+        FileGeneratorService, environment::env, file_generation_config::TemplateGenConfig,
+    },
     response::File,
 };
 
-pub struct FileGeneratorService {
+pub struct TemplatingService {
     pub ir: Ir,
-    pub config: FileGenerationConfig,
+    pub config: TemplateGenConfig,
     pub environment: Environment<'static>,
 }
 
-impl FileGeneratorService {
-    fn files(&self) -> Result<Vec<File>, Error> {
+impl FileGeneratorService for TemplatingService {
+    fn generate(&self) -> Result<Vec<File>, Error> {
         let mut files = self.model_module_files()?;
-        self.add_query_files(&mut files);
+        self.add_query_files(&mut files)?;
         files.push(self.add_model_entrypoint()?);
         return Ok(files);
+    }
+}
+
+impl TemplatingService {
+    pub fn new(ir: Ir, config: TemplateGenConfig) -> Result<Self, Error> {
+        let environment = env(ir.clone(), config)?;
+
+        Ok(TemplatingService {
+            ir,
+            config,
+            environment,
+        })
     }
 
     fn model_module_files(&self) -> Result<Vec<File>, Error> {
@@ -39,9 +53,10 @@ impl FileGeneratorService {
         let filename = format!("models/{}.{}", module.name, &self.config.file_extension);
 
         let content = self.environment.get_template("model")?.render(context! {
-            path => ["models", &module.name],
+            this_module => ["models", &module.name],
             used_types => module.used_types(),
-            module => module,
+            model_module => module,
+            ir => self.ir,
         })?;
 
         files.push(File {
@@ -54,31 +69,34 @@ impl FileGeneratorService {
     fn add_model_entrypoint(&self) -> Result<File, Error> {
         let content = self
             .environment
-            .get_template("model_dir")?
+            .get_template("model_init")?
             .render(context!(
                 ir => self.ir,
+                this_module => ["models", self.config.model_directory_entrypoint]
             ))?;
         let path = format!("models/{}", self.config.model_directory_entrypoint);
         Ok(File { path, content })
     }
 
-    pub fn add_query_files(&self, files: &mut Vec<File>) {
+    pub fn add_query_files(&self, files: &mut Vec<File>) -> Result<(), Error> {
         let namespace = &self.ir.query_namespace;
-        self.add_query_namespaces_recursively(files, &vec![], &namespace);
+        let mut path = vec![];
+        self.add_query_namespaces_recursively(files, &mut path, &namespace)?;
+        Ok(())
     }
 
     fn add_query_namespaces_recursively(
         &self,
         files: &mut Vec<File>,
-        path: &Vec<Arc<str>>,
+        path: &mut Vec<Arc<str>>,
         namespace: &QueryNamespace,
     ) -> Result<(), Error> {
         self.add_query_namespace(files, path, namespace)?;
 
         for (name, subnamespace) in namespace.subnamespaces.iter() {
-            let mut path = path.clone();
             path.push(name.clone());
-            self.add_query_namespaces_recursively(files, &path, subnamespace);
+            self.add_query_namespaces_recursively(files, path, subnamespace)?;
+            path.pop();
         }
         Ok(())
     }
@@ -86,7 +104,7 @@ impl FileGeneratorService {
     pub fn add_query_namespace(
         &self,
         files: &mut Vec<File>,
-        path: &Vec<Arc<str>>,
+        module_segments: &Vec<Arc<str>>,
         namespace: &QueryNamespace,
     ) -> Result<(), Error> {
         let content = self
@@ -95,15 +113,26 @@ impl FileGeneratorService {
             .unwrap()
             .render(context! {
                 query_namespace => namespace,
-                path => path,
+                this_module => module_segments,
                 ir => self.ir,
+                used_types => namespace.used_types(),
             })?;
 
-        let path = format!(
-            "{}.{}",
-            path.join("/"),
-            self.config.query_directory_entrypoint
-        );
+        let path;
+
+        if namespace.subnamespaces.len() == 0 {
+            path = format!(
+                "{}.{}",
+                module_segments.join("/"),
+                self.config.file_extension
+            );
+        } else {
+            path = format!(
+                "{}/{}",
+                module_segments.join("/"),
+                self.config.query_directory_entrypoint
+            );
+        }
 
         files.push(File { path, content });
         Ok(())

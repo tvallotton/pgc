@@ -1,25 +1,23 @@
 use crate::{
     error::Error,
     ir::{
-        method_service::MethodService,
-        query_namespace::QueryNamespace,
-        type_service::{self, TypeService},
+        method_service::MethodService, query_namespace::QueryNamespace, type_service::TypeService,
     },
     request::{Query, Request},
 };
 
-pub struct QueryNamespaceBuilder {
+pub struct QueryNamespaceService {
     request: Request,
     method_service: MethodService,
     namespace: QueryNamespace,
 }
 
-impl QueryNamespaceBuilder {
-    pub fn new(request: &Request) -> Result<QueryNamespaceBuilder, Error> {
+impl QueryNamespaceService {
+    pub fn new(request: &Request) -> Result<QueryNamespaceService, Error> {
         let type_service = TypeService {
             catalog: request.catalog.clone(),
         };
-        Ok(QueryNamespaceBuilder {
+        Ok(QueryNamespaceService {
             request: request.clone(),
             method_service: MethodService::new(type_service.clone()),
             namespace: QueryNamespace::root(),

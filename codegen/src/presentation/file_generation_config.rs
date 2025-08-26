@@ -1,5 +1,13 @@
-pub struct FileGenerationConfig {
+use crate::{presentation::type_mapping_service::TypeMapService, response::File};
+
+#[derive(Clone, Copy)]
+pub struct TemplateGenConfig {
     pub query_directory_entrypoint: &'static str,
     pub model_directory_entrypoint: &'static str,
     pub file_extension: &'static str,
+    pub query_template: &'static str,
+    pub model_template: &'static str,
+    pub model_init_template: &'static str,
+    pub type_map_service: &'static dyn TypeMapService,
+    pub static_files: &'static [File],
 }

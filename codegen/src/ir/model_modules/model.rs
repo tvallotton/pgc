@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ir::r#type::Type,
-    request::{Column, Record},
+    request::Record,
 };
 
 #[derive(Clone, Serialize, Deserialize)]

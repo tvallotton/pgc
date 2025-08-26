@@ -52,7 +52,7 @@ export class BuildService {
       queries: await this.getQueries(),
       config: this.configService.config,
     };
-
+    console.log(payload);
     await this.codegenService.generate(payload);
   }
 

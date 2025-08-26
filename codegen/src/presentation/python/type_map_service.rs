@@ -1,15 +1,19 @@
 use crate::{
     ir::Type,
     presentation::type_mapping_service::{LanguageType, TypeMapService},
+    utils::to_pascal_case,
 };
 use std::sync::Arc;
 
-struct AsyncpgTypeMapService;
+#[derive(Clone, Copy)]
+pub struct AsyncpgTypeMapService;
+
+#[derive(Clone, Copy)]
 pub struct PsycopgTypeMapService;
 
 impl TypeMapService for PsycopgTypeMapService {
     #[rustfmt::skip]
-    fn get(&self, module: Arc<[Arc<str>]>, r#type: &Type) -> LanguageType {
+    fn get(&self, module: Vec<String>, r#type: &Type) -> LanguageType {
         match r#type {
             Type::Bit
             | Type::BitVarying
@@ -21,7 +25,7 @@ impl TypeMapService for PsycopgTypeMapService {
             | Type::Polygon
             | Type::Circle
             | Type::Box => LanguageType::annotation("str"),
-            Type::AnyMultiRange | Type::AnyCompatibleMultiRange => LanguageType::annotation("list[psycopg.types.range.Range]").import(["import psycopg.types.range"]),
+            Type::AnyMultiRange | Type::AnyCompatibleMultiRange => LanguageType::annotation("list[psycopg.types.range.Range]").  import(["import psycopg.types.range"]),
             Type::TsMultiRange | Type::TsTzMultiRange => LanguageType::annotation("list[psycopg.types.range.Range[datetime.datetime]]").import(["import psycopg.types.range", "import datetime"]),
             Type::DateMultiRange  => LanguageType::annotation("list[psycopg.types.range.Range[datetime.date]]").import(["import psycopg.types.range", "import datetime"]),
             Type::DateRange => LanguageType::annotation("psycopg.types.range.Range[datetime.date]").import(["import psycopg.types.range", "import datetime"]),
@@ -38,11 +42,23 @@ impl TypeMapService for PsycopgTypeMapService {
 
 impl TypeMapService for AsyncpgTypeMapService {
     #[rustfmt::skip]
-    fn get(&self, current_module: Arc<[Arc<str>]>, r#type: &crate::ir::Type) -> LanguageType {
+    fn get(&self, current_module: Vec<String>, r#type: &crate::ir::Type) -> LanguageType {
         match r#type {
             Type::UserDefined { module_path, name }  => {
+                let name: Arc<str> = to_pascal_case(&name).into();
                 let module: Arc<_> = module_path.join(".").into();
-                LanguageType { name: Some(name.clone()), annotation: format!("{module}.{name}").into(), import: vec![format!("import {}", module).into()], module: Some(module) }
+                let mut annotation = format!("{module}.{name}").into();
+                let same_module = current_module.iter().map(|s|&**s).eq(module_path.iter().map(|s|&**s));
+                if same_module {
+                    annotation = name.clone();
+                }
+
+                LanguageType {
+                    name: Some(name.clone()),
+                    annotation,
+                    import: vec![],
+                    module: Some(module)
+                }
             },
             Type::Nullable(r#type) => {
                 let r#type = self.get(current_module, r#type);
