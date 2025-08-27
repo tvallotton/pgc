@@ -4,7 +4,7 @@ use minijinja::value::{Enumerator, Object, ObjectRepr};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug, Serialize, Deserialize)]
-#[serde(tag = "t", content = "c")]
+#[serde(tag = "variant", content = "c")]
 pub enum Type {
     // A type not matching any of these
     Other {
@@ -200,17 +200,21 @@ impl Type {
     ];
 }
 
-impl Object for Type {
-    fn repr(self: &Arc<Self>) -> minijinja::value::ObjectRepr {
-        ObjectRepr::Plain
+impl Type {
+    pub fn from_jinja(value: minijinja::Value) -> Self {
+        let deserializer = serde::de::value::MapDeserializer::new(
+            value.as_object().unwrap().try_iter_pairs().unwrap(),
+        );
+        Type::deserialize(deserializer).unwrap()
     }
-
-    // fn enumerate(self: &Arc<Self>) -> minijinja::value::Enumerator {
-    //     Enumerator::Str(&[])
-    // }
 }
 
 #[test]
 fn array_is_sorted() {
     assert!(Type::NAMES.is_sorted())
+}
+#[test]
+fn type_from_jinja() {
+    let value = minijinja::Value::from_serialize(Type::Polygon);
+    assert_eq!(Type::from_jinja(value), Type::Polygon)
 }

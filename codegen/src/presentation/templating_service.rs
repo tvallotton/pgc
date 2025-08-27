@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{mem::take, sync::Arc};
 
 use minijinja::{Environment, context};
 
@@ -18,9 +18,10 @@ pub struct TemplatingService {
 }
 
 impl FileGeneratorService for TemplatingService {
-    fn generate(&self) -> Result<Vec<File>, Error> {
+    fn generate(&mut self) -> Result<Vec<File>, Error> {
         let mut files = self.model_module_files()?;
         self.add_query_files(&mut files)?;
+        self.include_other_templates(&mut files)?;
         files.push(self.add_model_entrypoint()?);
         return Ok(files);
     }
@@ -28,13 +29,31 @@ impl FileGeneratorService for TemplatingService {
 
 impl TemplatingService {
     pub fn new(ir: Ir, config: TemplateGenConfig) -> Result<Self, Error> {
-        let environment = env(ir.clone(), config)?;
+        let environment = env(ir.clone(), &config)?;
 
         Ok(TemplatingService {
             ir,
             config,
             environment,
         })
+    }
+
+    fn include_other_templates(&self, files: &mut Vec<File>) -> Result<(), Error> {
+        for file in &self.config.other_templates {
+            let content = self.environment.render_named_str(
+                &file.path,
+                &file.content,
+                context! {
+                    ir => self.ir
+                },
+            )?;
+
+            files.push(File {
+                path: file.path.clone(),
+                content: content,
+            });
+        }
+        Ok(())
     }
 
     fn model_module_files(&self) -> Result<Vec<File>, Error> {

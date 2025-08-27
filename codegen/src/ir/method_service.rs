@@ -34,6 +34,7 @@ impl MethodService {
             input_models: take(&mut self.input_models),
             output_type: self.output_type(query),
             output_model: self.output_model(query),
+            output_columns: self.output_columns(query),
         }
     }
 
@@ -100,18 +101,21 @@ impl MethodService {
         if query.output.len() < 2 {
             return None;
         }
-        let columns = query
+
+        Some(MethodModel {
+            r#type: self.output_type(query)?,
+            fields: self.output_columns(query),
+        })
+    }
+
+    fn output_columns(&self, query: &Query) -> IndexMap<Arc<str>, Type> {
+        query
             .output
             .iter()
             .map(|column| {
                 let type_ = self.type_service.resolve_from_output(&column.type_);
                 (column.name.clone(), type_)
             })
-            .collect();
-
-        Some(MethodModel {
-            r#type: self.output_type(query)?,
-            fields: columns,
-        })
+            .collect()
     }
 }

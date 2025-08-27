@@ -1,0 +1,29 @@
+{%- if model_module.enums %}
+{%- endif %}
+{%- for type in used_types %}
+{%- for import in (type | imports) %}
+{{import}}
+{%- endfor %}
+{%- endfor %}
+
+{%- for enum in model_module.enums %}
+
+export enum {{enum.name | to_pascal_case }} {
+    {%- for value in enum.values %}
+    {{ value | to_screaming_snake_case }} = {{ value | to_c_string }},
+    {%- endfor %}
+{%- endfor %}
+}
+
+{%- for model in model_module.models %}
+
+export interface {{ model.name | to_pascal_case }} {
+    {%- for field in model.fields %}
+    {%- if field.type | is_nullable %}
+    {{field.name | to_camel_case }}?: {{ field.type | annotation }};
+    {%- else %}
+    {{field.name | to_camel_case }}: {{ field.type | annotation }};
+    {%- endif %}
+    {%- endfor %}
+}
+{%- endfor %}

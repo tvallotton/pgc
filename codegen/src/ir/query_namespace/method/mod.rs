@@ -1,7 +1,4 @@
-use std::{
-    collections::BTreeMap,
-    sync::Arc,
-};
+use std::{collections::BTreeMap, sync::Arc};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -15,6 +12,7 @@ pub struct Method {
     pub input_models: BTreeMap<Arc<str>, MethodModel>,
     pub output_type: Option<Type>,
     pub output_model: Option<MethodModel>,
+    pub output_columns: IndexMap<Arc<str>, Type>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

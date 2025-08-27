@@ -15,7 +15,8 @@ pub fn asyncpg(ir: &Ir) -> Result<TemplateGenConfig, Error> {
         model_template: include_str!("./templates/asyncpg/model.j2"),
         model_init_template: include_str!("./templates/asyncpg/model_init.j2"),
         type_map_service: &AsyncpgTypeMapService,
-        static_files: &[],
+        other_templates: vec![],
+        register_filters: None,
     })
 }
 
@@ -29,7 +30,8 @@ pub fn psycopg(ir: &Ir) -> Result<TemplateGenConfig, Error> {
         model_template: include_str!("./templates/psycopg/model.j2"),
         model_init_template: include_str!("./templates/psycopg/model_init.j2"),
         type_map_service: &PsycopgTypeMapService,
-        static_files: &[],
+        other_templates: vec![],
+        register_filters: None,
     })
 }
 

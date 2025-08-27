@@ -49,11 +49,33 @@ impl TypeService {
     }
 
     fn resolve_from_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Type {
+        if let Some(ty) = self.resolve_from_catalog_non_array(schema_name, name) {
+            return ty;
+        }
+
+        let Some(name) = name.strip_prefix('_') else {
+            return Type::Any;
+        };
+
+        let r#type = self
+            .resolve_from_catalog_non_array(schema_name, &name.into())
+            .unwrap_or(Type::Any);
+
+        Type::Array {
+            r#type: Arc::new(r#type),
+            dim: 1,
+        }
+    }
+
+    fn resolve_from_catalog_non_array(
+        &self,
+        schema_name: &Arc<str>,
+        name: &Arc<str>,
+    ) -> Option<Type> {
         if &**schema_name == "pg_catalog" {
             return self.from_pg_catalog(&name);
         }
         self.from_user_defined_catalog(schema_name, name)
-            .unwrap_or(Type::Any)
     }
 
     fn from_user_defined_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Option<Type> {
@@ -81,19 +103,18 @@ impl TypeService {
         }
     }
 
+    fn from_pg_catalog(&self, type_name: &str) -> Option<Type> {
+        let index = Type::NAMES
+            .binary_search_by(|(name, _, _)| name.cmp(&type_name))
+            .ok()?;
+        Some(Type::NAMES[index].2.clone())
+    }
+
     fn get_schema(&self, schema_name: &str) -> Option<&Schema> {
         self.catalog
             .schemas
             .iter()
             .find(|schema| &*schema.name == schema_name)
-    }
-
-    fn from_pg_catalog(&self, type_name: &str) -> Type {
-        Type::NAMES
-            .iter()
-            .find(|(name, _, _)| *name == type_name)
-            .map(|(_, _, ty)| ty.clone())
-            .unwrap_or(Type::Any)
     }
 }
 
@@ -133,6 +154,9 @@ mod test {
     #[test]
     fn type_service_from_pg_catalog() {
         let type_service = type_service();
-        assert_eq!(type_service.from_pg_catalog("int4range"), Type::Int4Range)
+        assert_eq!(
+            type_service.from_pg_catalog("int4range"),
+            Some(Type::Int4Range)
+        )
     }
 }

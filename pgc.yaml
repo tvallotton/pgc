@@ -9,8 +9,8 @@ queries:
   - "author.sql"
   - "queries.sql"
 codegen:
-  language: python # typescript
-  driver: psycopg
+  language: typescript
+  driver: postgres
   out: ./queries
 
   types:

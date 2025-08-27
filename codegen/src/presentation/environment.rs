@@ -19,8 +19,12 @@ use crate::{
     },
 };
 
-pub fn env(ir: Ir, config: TemplateGenConfig) -> Result<Environment<'static>, Error> {
+pub fn env(ir: Ir, config: &TemplateGenConfig) -> Result<Environment<'static>, Error> {
     let mut env = minijinja::Environment::new();
+
+    if let Some(custom_filters) = config.register_filters {
+        custom_filters(&mut env)?;
+    }
 
     add_templates(&mut env, config)?;
     add_string_filters(&mut env);
@@ -29,7 +33,7 @@ pub fn env(ir: Ir, config: TemplateGenConfig) -> Result<Environment<'static>, Er
     Ok(env)
 }
 
-pub fn add_type_filters(env: &mut Environment<'static>, ir: Ir, config: TemplateGenConfig) {
+pub fn add_type_filters(env: &mut Environment<'static>, ir: Ir, config: &TemplateGenConfig) {
     let service = Arc::new(OverriddenTypeMapService::new(ir, config.type_map_service));
 
     let service_ = service.clone();
@@ -64,7 +68,7 @@ pub fn add_type_filters(env: &mut Environment<'static>, ir: Ir, config: Template
 
 pub fn add_templates(
     env: &mut Environment<'static>,
-    config: TemplateGenConfig,
+    config: &TemplateGenConfig,
 ) -> Result<(), Error> {
     env.add_template("query", config.query_template)?;
     env.add_template("model", config.model_template)?;

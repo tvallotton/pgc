@@ -55,11 +55,11 @@ export class QueryParserService {
   parseName(query: RawQuery, annotations: Record<string, Annotation>) {
     const name = annotations["name"];
     const match = name.value.match(
-      /(\S+)\s+:(val|exec|one|many)/,
+      /(\S+)\s+:(one|many|exec)/,
     );
     if (!match) {
       throw Error(
-        `"${query.file.path}:${name.line}" invalid query return specifier (expected one of: :val, :one, :many, :exec)`,
+        `"${query.file.path}:${name.line}" invalid query return specifier (expected one of: :one, :many, :exec)`,
       );
     }
 
