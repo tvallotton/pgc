@@ -9,7 +9,7 @@ Pgc is a type-safe SQL code generator for PostgreSQL, inspired by sqlc. It parse
 ### Install pgc
 Install pgc running the following line:
 ```bash
-$ curl -fsSL https://raw.githubusercontent.com/tvallotton/pgc/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tvallotton/pgc/main/scripts/install.sh | bash
 ```
 
 ### Setup config
@@ -95,17 +95,6 @@ author2 = await queries.author.get_by_id(author.id)
 assert author2 == author
 ```
 The `init_connection` function will register type codecs on the connection so row types can be decoded into models directly. When using a pool the `init=` argument can be used to have the pool initialize every connection.
-
-# Features
-* Namespacing of queries
-* Row types
-* Grouping query arguments
-* Foreign key enums
-
-
-
-## Introduction
-Pgc is a compiler for postgres (heavily inspired on sqlc), which aims to type check postgres queries and generate models and methods to perform such queries.
 
 ## Namespaced queries
 
