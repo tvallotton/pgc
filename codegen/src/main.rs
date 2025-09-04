@@ -1,6 +1,7 @@
-use crate::file_generator::FileGenerator;
+use crate::ir::{Ir, IrService};
+use crate::presentation::PresentationService;
 use crate::request::Request;
-use crate::response::{File, Response};
+use crate::response::Response;
 use error::Error;
 use serde::Serialize;
 use serde_json::json;
@@ -8,22 +9,15 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::{slice, sync::atomic::AtomicU64};
 
 pub mod error;
-pub mod file_gen_config;
-pub mod file_generator;
-pub mod jinja_environment_builder;
-pub mod method;
+pub mod ir;
 pub mod mock;
-pub mod model_modules;
-pub mod query_namespace;
+pub mod presentation;
 pub mod request;
 pub mod response;
-pub mod template_context;
-pub mod r#type;
-pub mod type_builder;
 
 mod utils;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn alloc(size: usize) -> *mut u8 {
     let mut buffer = Vec::with_capacity(size);
     let ptr = buffer.as_mut_ptr();
@@ -31,7 +25,7 @@ pub extern "C" fn alloc(size: usize) -> *mut u8 {
     ptr
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
     match try_build(ptr, size) {
         Ok(value) => write_response(value),
@@ -39,11 +33,15 @@ pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
     }
 }
 
-fn try_build(ptr: *mut u8, size: usize) -> Result<impl Serialize, Error> {
+fn try_build(ptr: *mut u8, size: usize) -> Result<Response, Error> {
     let request = load_request(ptr, size)?;
-    let generator = FileGenerator::new(&request)?;
+
+    let ir = IrService::new(request.clone())?.build(request);
+
+    let presentation_service = PresentationService { ir };
+
     Ok(Response {
-        files: generator.render_files()?,
+        files: presentation_service.generate()?,
     })
 }
 
@@ -56,7 +54,7 @@ fn write_response<T: Serialize>(response: T) -> *const u8 {
     buffer.leak().as_bytes().as_ptr()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn response_length() -> u64 {
     RESPONSE_LENGTH.load(Relaxed)
 }
@@ -69,3 +67,15 @@ fn load_request(ptr: *mut u8, size: usize) -> Result<Request, error::Error> {
 }
 
 fn main() {}
+
+#[test]
+fn test_from_catalog() {
+    let contents = include_str!("../tests/request.json");
+
+    println!(
+        "{:?}",
+        try_build(contents.as_ptr() as _, contents.len())
+            .unwrap()
+            .files
+    );
+}

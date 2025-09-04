@@ -49,6 +49,7 @@ export class CodegenService {
   }
 
   async runWasmCodegenModule(payload: object) {
+    Deno.writeTextFile("catalog.json", JSON.stringify(payload));
     const utf8JsonPayload = await this.serializePayload(payload);
     const { instance } = await this.loadPlugin();
     const exports = instance.exports as any;

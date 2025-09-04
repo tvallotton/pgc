@@ -1,11 +1,10 @@
 use std::{
-    collections::{BTreeMap, HashMap},
-    fmt::format,
-    sync::{LazyLock, Mutex},
+    collections::BTreeMap,
+    sync::Mutex,
 };
 
 use heck::{ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
-use minijinja::{Environment, Template};
+use minijinja::Environment;
 use regex::bytes::Regex;
 use serde::Serialize;
 

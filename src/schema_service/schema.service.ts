@@ -130,7 +130,7 @@ const LOAD_SCHEMA_QUERY = `
                   FROM enums
                   WHERE enums.enum_schema = schemas.schema_name
               ),
-              'models', (
+              'records', (
                   SELECT jsonb_agg(
                       jsonb_build_object(
                           'name', table_name,

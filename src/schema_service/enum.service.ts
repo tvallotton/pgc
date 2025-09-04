@@ -47,7 +47,7 @@ export class EnumService {
       if (!schema) return;
 
       schema.enums.push({ name, values });
-      schema.models = schema.models.filter((table) => table.name != name);
+      schema.records = schema.records.filter((table) => table.name != name);
     }
   }
 

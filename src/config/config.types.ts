@@ -34,7 +34,8 @@ const EnumOptions = z.string().or(z.record(z.string(), z.string().array()));
 
 const CodegenConfig = z.object({
   out: z.string(),
-  target: z.string(),
+  language: z.string(),
+  driver: z.string(),
   plugin: PluginConfig.optional().nullable(),
   types: z.record(z.string(), TypeOverride).optional().nullable(),
   exclude_tables: z.string().array().optional().nullable(),

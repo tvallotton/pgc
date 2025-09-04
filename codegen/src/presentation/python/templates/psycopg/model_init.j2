@@ -1,0 +1,12 @@
+{%- for module in ir.model_modules.model_modules -%}
+from . import {{module}}
+{% endfor -%}
+
+
+{%- if ir.model_modules.model_modules["public"] -%}
+from .public import (
+{%- for model in ir.model_modules.model_modules["public"].models %}
+    {{ model.name | to_pascal_case }},
+{%- endfor %}
+)
+{% endif %}

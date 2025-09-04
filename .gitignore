@@ -5,3 +5,4 @@ pgc.yaml
 author.sql
 schema.sql
 queries/*
+**/.DS_Store
