@@ -9,12 +9,13 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::{slice, sync::atomic::AtomicU64};
 
 pub mod error;
+#[cfg(test)]
+pub mod faker;
 pub mod ir;
 pub mod mock;
 pub mod presentation;
 pub mod request;
 pub mod response;
-
 mod utils;
 
 #[unsafe(no_mangle)]
@@ -36,7 +37,7 @@ pub extern "C" fn build(ptr: *mut u8, size: usize) -> *const u8 {
 fn try_build(ptr: *mut u8, size: usize) -> Result<Response, Error> {
     let request = load_request(ptr, size)?;
 
-    let ir = IrService::new(request.clone())?.build(request);
+    let ir = IrService::new(request.clone())?.build();
 
     let presentation_service = PresentationService { ir };
 

@@ -18,7 +18,6 @@ program.command("build").description(
     buildService = await BuildService.fromConfig(configService);
     await buildService.build();
   } catch (e) {
-    console.log(e);
     console.log("error:", (e as Error).message);
   } finally {
     await buildService?.close();

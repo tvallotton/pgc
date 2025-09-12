@@ -12,7 +12,7 @@ pub struct LanguageType {
     pub name: Option<Arc<str>>,
     pub annotation: Arc<str>,
     pub import: Vec<Arc<str>>,
-    pub module: Option<Arc<str>>,
+    pub constructor: Option<Arc<str>>,
 }
 
 pub trait TypeMapService: Send + Sync + 'static {
@@ -59,7 +59,7 @@ impl LanguageType {
             annotation: annotation.into(),
             name: None,
             import: vec![],
-            module: None,
+            constructor: None,
         }
     }
 
@@ -73,12 +73,5 @@ impl LanguageType {
     pub fn import<const N: usize>(self, import: [&str; N]) -> Self {
         let import: Vec<Arc<str>> = import.into_iter().map(Into::into).collect();
         Self { import, ..self }
-    }
-
-    pub fn module(self, module: &str) -> Self {
-        Self {
-            module: Some(module.into()),
-            ..self
-        }
     }
 }

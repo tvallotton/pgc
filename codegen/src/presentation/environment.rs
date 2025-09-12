@@ -6,7 +6,10 @@ use std::{
 
 use heck::{ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase, ToUpperCamelCase};
 use indexmap::map::serde_seq::deserialize;
-use minijinja::{Environment, State, Value, context, value::Object};
+use minijinja::{
+    Environment, State, Value, context,
+    value::{FunctionResult, Object},
+};
 use regex::bytes::Regex;
 use serde::{Deserialize, Deserializer, Serialize, de::IntoDeserializer};
 
@@ -15,7 +18,7 @@ use crate::{
     ir::{Ir, Type},
     presentation::{
         file_generation_config::TemplateGenConfig,
-        type_mapping_service::{OverriddenTypeMapService, TypeMapService},
+        type_mapping_service::{LanguageType, OverriddenTypeMapService, TypeMapService},
     },
 };
 
@@ -35,35 +38,41 @@ pub fn env(ir: Ir, config: &TemplateGenConfig) -> Result<Environment<'static>, E
 
 pub fn add_type_filters(env: &mut Environment<'static>, ir: Ir, config: &TemplateGenConfig) {
     let service = Arc::new(OverriddenTypeMapService::new(ir, config.type_map_service));
-
-    let service_ = service.clone();
-
-    env.add_filter("annotation", move |state: &State, ty: Value| -> Arc<str> {
-        service_.get(module_path(state), &as_type(ty)).annotation
+    add_language_type_filter(env, &service, "annotation", |ty| ty.annotation);
+    add_language_type_filter(env, &service, "name", |ty| ty.name);
+    add_language_type_filter(env, &service, "imports", |ty| ty.import);
+    add_language_type_filter(env, &service, "constructor", |ty| ty.constructor);
+    add_type_filter(env, "is_array", |ty| matches!(ty, Type::Array { .. }));
+    add_type_filter(env, "is_user_defined", |ty| {
+        matches!(ty, Type::UserDefined { .. })
     });
+    add_type_filter(env, "array_dim", |ty| {
+        let Type::Array { dim, .. } = ty else {
+            return 0;
+        };
+        dim
+    });
+}
 
+fn add_language_type_filter<T: FunctionResult + 'static>(
+    env: &mut Environment,
+    service: &Arc<OverriddenTypeMapService>,
+    name: &'static str,
+    f: impl Fn(LanguageType) -> T + Sync + Send + 'static,
+) {
     let service_ = service.clone();
 
-    env.add_filter(
-        "name",
-        move |state: &State, ty: Value| -> Option<Arc<str>> {
-            service_.get(module_path(state), &as_type(ty)).name
-        },
-    );
-    let service_ = service.clone();
-    env.add_filter(
-        "imports",
-        move |state: &State, ty: Value| -> Vec<Arc<str>> {
-            service_.get(module_path(state), &as_type(ty)).import
-        },
-    );
-    let service_ = service.clone();
-    env.add_filter(
-        "type_module",
-        move |state: &State, ty: Value| -> Option<Arc<str>> {
-            service_.get(module_path(state), &as_type(ty)).module
-        },
-    );
+    env.add_filter(name, move |state: &State, ty: Value| -> T {
+        f(service_.get(module_path(state), &as_type(ty)))
+    });
+}
+
+fn add_type_filter<T: FunctionResult + 'static>(
+    env: &mut Environment,
+    name: &'static str,
+    f: impl Fn(Type) -> T + Sync + Send + 'static,
+) {
+    env.add_filter(name, move |ty: Value| -> T { f(as_type(ty)) });
 }
 
 pub fn add_templates(
@@ -73,6 +82,9 @@ pub fn add_templates(
     env.add_template("query", config.query_template)?;
     env.add_template("model", config.model_template)?;
     env.add_template("model_init", config.model_init_template)?;
+    for (name, content) in config.other_templates {
+        env.add_template(name, content)?;
+    }
     Ok(())
 }
 

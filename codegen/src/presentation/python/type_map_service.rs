@@ -44,43 +44,14 @@ impl TypeMapService for AsyncpgTypeMapService {
     #[rustfmt::skip]
     fn get(&self, current_module: Vec<String>, r#type: &crate::ir::Type) -> LanguageType {
         match r#type {
-            Type::UserDefined { module_path, name }  => {
-                let name: Arc<str> = to_pascal_case(&name).into();
-                let module: Arc<_> = module_path.join(".").into();
-                let mut annotation = format!("{module}.{name}").into();
-                let same_module = current_module.iter().map(|s|&**s).eq(module_path.iter().map(|s|&**s));
-                if same_module {
-                    annotation = name.clone();
-                }
-
-                LanguageType {
-                    name: Some(name.clone()),
-                    annotation,
-                    import: vec![],
-                    module: Some(module)
-                }
-            },
-            Type::Nullable(r#type) => {
-                let r#type = self.get(current_module, r#type);
-                LanguageType {
-                    name: r#type.name,
-                    annotation: format!("{} | None", r#type.annotation).into(),
-                    import: r#type.import,
-                    module: r#type.module
-                }
-            }
-            Type::Array { r#type, dim } => {
-                let r#type = self.get(current_module, r#type);
-                let mut annotation = r#type.annotation;
-                for _ in 0..*dim {
-                    annotation = format!("list[{}]", annotation).into();
-                }
-                LanguageType {
-                    name: None,
-                    annotation,
-                    import: r#type.import,
-                    module: r#type.module
-                }
+            Type::UserDefined { .. }  =>
+                return self.get_user_defined(current_module, r#type)
+            ,
+            Type::Nullable(..) =>
+                self.get_nullable(current_module, r#type),
+                
+            Type::Array { .. } => {
+              self.get_array(current_module, r#type)
             }
             Type::AnyArray | Type::AnyCompatibleArray => LanguageType::annotation("list"),
             Type::Void => LanguageType::annotation("None"),
@@ -147,6 +118,73 @@ impl TypeMapService for AsyncpgTypeMapService {
             | Type::Serial4
             | Type::Serial8 => LanguageType::annotation("int"),
             Type::Numeric | Type::Decimal => LanguageType::annotation("decimal.Decimal").import(["import decimal"]),
+        }
+    }
+}
+
+impl AsyncpgTypeMapService {
+    fn get_user_defined(
+        &self,
+        current_module: Vec<String>,
+        r#type: &crate::ir::Type,
+    ) -> LanguageType {
+        let Type::UserDefined { module_path, name } = r#type else {
+            unreachable!();
+        };
+        let name: Arc<str> = to_pascal_case(&name).into();
+        let module: Arc<str> = module_path.join(".").into();
+        let mut annotation = format!("{module}.{name}").into();
+
+        let same_module = current_module
+            .iter()
+            .map(|s| &**s)
+            .eq(module_path.iter().map(|s| &**s));
+
+        if same_module {
+            annotation = name.clone();
+        }
+
+        LanguageType {
+            name: Some(name.clone()),
+            constructor: Some(annotation.clone()),
+            annotation,
+            import: vec![],
+        }
+    }
+
+    fn get_nullable(&self, current_module: Vec<String>, r#type: &crate::ir::Type) -> LanguageType {
+        let Type::Nullable(r#type) = r#type else {
+            unreachable!();
+        };
+        let r#type = self.get(current_module, r#type);
+        LanguageType {
+            name: r#type.name,
+            annotation: format!("{} | None", r#type.annotation).into(),
+            import: r#type.import,
+            constructor: r#type.constructor.clone(),
+        }
+    }
+    fn get_array(&self, current_module: Vec<String>, r#type: &crate::ir::Type) -> LanguageType {
+        let Type::Array { r#type, dim } = r#type else {
+            unreachable!();
+        };
+        let r#type = self.get(current_module, r#type);
+        let mut annotation = r#type.annotation;
+        let mut constructor = r#type.constructor.clone();
+
+        for i in 0..*dim {
+            annotation = format!("list[{}]", annotation).into();
+            let Some(prev_constructor) = constructor else {
+                continue;
+            };
+            constructor =
+                Some(format!("(lambda arr{i}: [*map({prev_constructor}, arr{i})])").into())
+        }
+        LanguageType {
+            name: None,
+            annotation,
+            import: r#type.import,
+            constructor,
         }
     }
 }

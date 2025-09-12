@@ -1,6 +1,8 @@
 pub use type_map_service::{AsyncpgTypeMapService, PsycopgTypeMapService};
 
-use crate::{error::Error, ir::Ir, presentation::file_generation_config::TemplateGenConfig};
+use crate::{
+    error::Error, ir::Ir, presentation::file_generation_config::TemplateGenConfig, response::File,
+};
 
 pub(super) mod driver;
 pub mod type_map_service;
@@ -11,11 +13,11 @@ pub fn asyncpg(ir: &Ir) -> Result<TemplateGenConfig, Error> {
         query_directory_entrypoint: "__init__.py",
         model_directory_entrypoint: "__init__.py",
         file_extension: "py",
-        query_template: include_str!("./templates/asyncpg/query.j2"),
-        model_template: include_str!("./templates/asyncpg/model.j2"),
-        model_init_template: include_str!("./templates/asyncpg/model_init.j2"),
+        query_template: include_str!("./templates/asyncpg-query.j2"),
+        model_template: include_str!("./templates/model.j2"),
+        model_init_template: include_str!("./templates/model_init.j2"),
         type_map_service: &AsyncpgTypeMapService,
-        other_templates: vec![],
+        other_templates: &[],
         register_filters: None,
     })
 }
@@ -26,11 +28,11 @@ pub fn psycopg(ir: &Ir) -> Result<TemplateGenConfig, Error> {
         query_directory_entrypoint: "__init__.py",
         model_directory_entrypoint: "__init__.py",
         file_extension: "py",
-        query_template: include_str!("./templates/psycopg/query.j2"),
-        model_template: include_str!("./templates/psycopg/model.j2"),
-        model_init_template: include_str!("./templates/psycopg/model_init.j2"),
+        query_template: include_str!("./templates/psycopg-query.j2"),
+        model_template: include_str!("./templates/model.j2"),
+        model_init_template: include_str!("./templates/model_init.j2"),
         type_map_service: &PsycopgTypeMapService,
-        other_templates: vec![],
+        other_templates: &[],
         register_filters: None,
     })
 }

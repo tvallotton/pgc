@@ -11,7 +11,12 @@ import postgres from "postgres"
 import { parser, ArrayParser, BigIntParser } from "./parsers.ts";
 import * as models from "./models/models.ts";
 {%- for subnamespace in query_namespace.subnamespaces %}
+{% set is_directory = (query_namespace.subnamespaces[subnamespace].subnamespaces | length) != 0 %}
+{% if is_directory  %}
+import * as {{subnamespace}} from "./{{subnamespace}}/queries.ts"
+{% else %}
 import * as {{subnamespace}} from "./{{subnamespace}}.ts"
+{% endif %}
 {%- endfor %}
 
 {%- for method in query_namespace.methods %}
@@ -51,7 +56,7 @@ export class {{ query_namespace.name | to_pascal_case }}Queries {
     {%- if method.query.annotations.not_null_result -%}
     {% set HANDLE_NONE -%}
         if (!rows[0]) {
-            throw new Error("The query {{method.query.name}} is marked with @not_null_result, but it has returned null.");
+            throw new Error("The query \"{{method.query.name}}\" is marked with @not_null_result, but it has returned null.");
         }
     {% endset %}
     {%- set OR_NONE = '' %}

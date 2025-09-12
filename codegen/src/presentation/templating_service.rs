@@ -39,17 +39,13 @@ impl TemplatingService {
     }
 
     fn include_other_templates(&self, files: &mut Vec<File>) -> Result<(), Error> {
-        for file in &self.config.other_templates {
-            let content = self.environment.render_named_str(
-                &file.path,
-                &file.content,
-                context! {
-                    ir => self.ir
-                },
-            )?;
+        for (name, _) in self.config.other_templates {
+            let content = self.environment.get_template(&name)?.render(context! {
+                ir => self.ir
+            })?;
 
             files.push(File {
-                path: file.path.clone(),
+                path: (*name).into(),
                 content: content,
             });
         }
@@ -139,7 +135,7 @@ impl TemplatingService {
 
         let path;
 
-        if namespace.subnamespaces.len() == 0 {
+        if namespace.subnamespaces.len() == 0 && !module_segments.is_empty() {
             path = format!(
                 "{}.{}",
                 module_segments.join("/"),
@@ -155,5 +151,20 @@ impl TemplatingService {
 
         files.push(File { path, content });
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::sync::Arc;
+
+    use fake::{Fake, Faker};
+
+    use crate::{ir::IrService, request::Request};
+    #[test]
+    fn file_has_name() {
+        let mut request: Request = Faker.fake();
+        request.queries = Arc::default();
+        let ir = IrService::new(request).unwrap().build();
     }
 }

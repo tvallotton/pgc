@@ -7,7 +7,8 @@ queries:
   - "queries/*.sql"
 
 codegen:
-  target: python:asyncpg
+  language: python
+  driver: asyncpg
   out: ./package/queries     # change package to your package name
   options:
     package: package.queries # change package to your package name

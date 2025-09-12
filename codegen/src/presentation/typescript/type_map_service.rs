@@ -66,7 +66,7 @@ impl TypeMapService for TypescriptTypeMapService {
             Type::Json => LanguageType::annotation("any"),
             Type::UserDefined { module_path, name } => {
                 let name: Arc<str> = to_pascal_case(&name).into();
-                let module: Arc<_> = module_path.join(".").into();
+                let module: Arc<str> = module_path.join(".").into();
                 let mut annotation = format!("{module}.{name}").into();
                 let same_module = current_module
                     .iter()
@@ -78,9 +78,9 @@ impl TypeMapService for TypescriptTypeMapService {
 
                 LanguageType {
                     name: Some(name.clone()),
+                    constructor: Some(annotation.clone()),
                     annotation,
                     import: vec![],
-                    module: Some(module),
                 }
             }
             Type::Nullable(r#type) => {
@@ -89,20 +89,28 @@ impl TypeMapService for TypescriptTypeMapService {
                     name: r#type.name,
                     annotation: format!("{} | null", r#type.annotation).into(),
                     import: r#type.import,
-                    module: r#type.module,
+                    constructor: r#type.constructor.clone(),
                 }
             }
             Type::Array { r#type, dim } => {
                 let r#type = self.get(current_module, r#type);
                 let mut annotation = r#type.annotation;
-                for _ in 0..*dim {
+                let mut constructor = r#type.constructor.clone();
+                for i in 0..*dim {
                     annotation = format!("Array<{}>", annotation).into();
+
+                    let Some(prev_constructor) = constructor else {
+                        continue;
+                    };
+
+                    constructor =
+                        Some(format!("((arr{i}) => arr{i}.map({prev_constructor}))").into())
                 }
                 LanguageType {
                     name: None,
                     annotation,
                     import: r#type.import,
-                    module: r#type.module,
+                    constructor,
                 }
             }
             Type::Bool => LanguageType::annotation("boolean").name("boolean"),

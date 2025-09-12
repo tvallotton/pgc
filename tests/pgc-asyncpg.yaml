@@ -1,0 +1,14 @@
+version: "1"
+database:
+  migrations:
+    - tests/schema.sql
+
+queries:
+  - tests/author.sql
+  - tests/book.sql
+codegen:
+  language: python
+  driver: asyncpg
+  out: tests/python/dist_asyncpg
+  options:
+    package: dist_asyncpg

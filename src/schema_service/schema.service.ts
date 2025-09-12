@@ -14,7 +14,8 @@ export class SchemaService {
 
   async loadCatalog() {
     await this.loadMigrations();
-    return this.querySchemas();
+    const { schemas } = await this.querySchemas();
+    return { schemas: schemas ?? [] };
   }
 
   private async loadMigrations() {

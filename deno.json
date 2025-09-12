@@ -3,7 +3,8 @@
     "build:wasm": "deno run --allow-sys --allow-run --allow-net --allow-env --allow-write --allow-read build.ts",
     "dev": "deno run --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read src/main.ts",
     "build": "deno run build:wasm && deno compile --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read --output pgc src/main.ts",
-    "install": "deno run build && mv pgc ~/.local/bin"
+    "test:python": "rm -rf tests/python/dist_asyncpg && rm -rf tests/python/dist_psycopg && deno run dev build -f tests/pgc-asyncpg.yaml && deno run dev build -f tests/pgc-psycopg.yaml && uv run --project tests/python pytest",
+    "install": "deno run build && mv pgc ~/.local/b in"
   },
   "imports": {
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",

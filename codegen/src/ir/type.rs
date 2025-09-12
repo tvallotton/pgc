@@ -4,7 +4,7 @@ use minijinja::value::{Enumerator, Object, ObjectRepr};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug, Serialize, Deserialize)]
-#[serde(tag = "variant", content = "c")]
+#[serde(tag = "variant", content = "content")]
 pub enum Type {
     // A type not matching any of these
     Other {

@@ -3,7 +3,7 @@ use std::{collections::BTreeSet, sync::Arc};
 use serde::Serialize;
 
 use crate::{
-    ir::{model_modules::Model, Type},
+    ir::{Type, model_modules::Model},
     request::Enum,
 };
 

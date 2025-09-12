@@ -21,10 +21,7 @@ pub fn postgres() -> TemplateGenConfig {
         model_template: include_str!("./templates/postgres/model.j2"),
         model_init_template: include_str!("./templates/postgres/model_init.j2"),
         type_map_service: &TypescriptTypeMapService,
-        other_templates: vec![File {
-            path: "parsers.ts".into(),
-            content: include_str!("./templates/parsers.ts").into(),
-        }],
+        other_templates: &[("parsers.ts", include_str!("./templates/parsers.ts"))],
         register_filters: Some(register_filters),
     }
 }

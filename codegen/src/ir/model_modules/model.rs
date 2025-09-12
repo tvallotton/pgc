@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    ir::r#type::Type,
-    request::Record,
-};
+use crate::{ir::r#type::Type, request::Record};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Model {

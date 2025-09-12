@@ -11,6 +11,6 @@ pub struct TemplateGenConfig {
     pub model_template: &'static str,
     pub model_init_template: &'static str,
     pub type_map_service: &'static dyn TypeMapService,
-    pub other_templates: Vec<File>,
+    pub other_templates: &'static [(&'static str, &'static str)],
     pub register_filters: Option<fn(&mut Environment) -> Result<(), Error>>,
 }

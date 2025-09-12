@@ -1,0 +1,15 @@
+[project]
+name = "tests"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "faker>=37.6.0",
+    "psycopg>=3.2.9",
+    "py-pglite[asyncpg,psycopg]>=0.5.0",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "testcontainers>=4.12.0",
+]

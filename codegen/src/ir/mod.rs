@@ -24,6 +24,7 @@ pub struct Ir {
 }
 
 pub struct IrService {
+    request: Request,
     query_namespace_service: QueryNamespaceService,
     model_service: ModelService,
 }
@@ -39,18 +40,19 @@ impl IrService {
             catalog: request.catalog.clone(),
         };
         Ok(IrService {
+            request,
             query_namespace_service,
             model_service,
         })
     }
 
-    pub fn build(&mut self, request: Request) -> Ir {
+    pub fn build(&mut self) -> Ir {
         let model_modules = self.model_service.create_model_modules();
         let query_namespace = self.query_namespace_service.build();
         Ir {
             model_modules,
             query_namespace,
-            request,
+            request: self.request.clone(),
         }
     }
 }
