@@ -6,3 +6,6 @@ author.sql
 schema.sql
 queries/*
 **/.DS_Store
+tests/*/out_*
+**/__pycache__
+node_modules

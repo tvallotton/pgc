@@ -29,3 +29,6 @@ select $val;
 
 -- @name: optional_parameter :one
 select ?val;
+
+-- @name: full_author :many
+select * from full_author;

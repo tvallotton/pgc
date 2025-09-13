@@ -9,6 +9,6 @@ queries:
 codegen:
   language: python
   driver: psycopg
-  out: tests/python/dist_psycopg
+  out: tests/python/out_psycopg
   options:
-    package: dist_psycopg
+    package: out_psycopg

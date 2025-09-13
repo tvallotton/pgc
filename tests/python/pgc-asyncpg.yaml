@@ -9,6 +9,6 @@ queries:
 codegen:
   language: python
   driver: asyncpg
-  out: tests/python/dist_asyncpg
+  out: tests/python/out_asyncpg
   options:
-    package: dist_asyncpg
+    package: out_asyncpg

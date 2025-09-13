@@ -196,7 +196,7 @@ left join pg_namespace n
 left join pg_class c
   on c.relnamespace = n.oid
  and c.relname      = i.tablename
- and c.relkind in ('r','p')
+ and c.relkind in ('r', 'c', 'p', 'v', 'm')
 left join pg_type t
   on t.oid = c.reltype
 left join lateral (

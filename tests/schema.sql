@@ -25,3 +25,10 @@ insert into genre values
     ('fantasy'),
     ('biography')
 on conflict do nothing;
+
+create or replace view full_author as (
+    select author, array_agg(book) as books
+    from author
+    join book on author.id = book.author_id
+    group by author.id
+);

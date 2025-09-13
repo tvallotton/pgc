@@ -12,8 +12,8 @@ export enum {{enum.name | to_pascal_case }} {
     {%- for value in enum.values %}
     {{ value | to_screaming_snake_case }} = {{ value | to_c_string }},
     {%- endfor %}
-{%- endfor %}
 }
+{%- endfor %}
 
 {%- for model in model_module.models %}
 

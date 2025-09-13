@@ -4,14 +4,15 @@ from uuid import UUID, uuid4
 
 import faker
 import pytest
-from dist_psycopg import Queries, init_connection
-from dist_psycopg.models import Author, Book
+from out_psycopg import Queries, init_connection
+from out_psycopg.author import FullAuthorRow
+from out_psycopg.models import Author, Book
 
 fake = faker.Faker()
 
 
 @pytest.fixture(scope="module")
-def populate_db(psycopg_conn):
+def queries(psycopg_conn) -> Queries:
     init_connection(psycopg_conn)
     queries = Queries(psycopg_conn)
 
@@ -35,15 +36,15 @@ def populate_db(psycopg_conn):
             )
         )
 
+    return queries
 
-def test_one_row_one_column(psycopg_conn, populate_db):
-    queries = Queries(psycopg_conn)
+
+def test_one_row_one_column(queries: Queries):
     author = queries.author.one_row_one_column()
     assert isinstance(author, Author)
 
 
-def test_one_row_one_column(psycopg_conn, populate_db):
-    queries = Queries(psycopg_conn)
+def test_one_row_one_column(queries: Queries):
     data = queries.author.one_row_many_coulmns()
 
     assert isinstance(data.author, Author)
@@ -51,16 +52,13 @@ def test_one_row_one_column(psycopg_conn, populate_db):
     assert data.one == 1
 
 
-def test_many_rows_one_column(psycopg_conn, populate_db):
-    queries = Queries(psycopg_conn)
+def test_many_rows_one_column(queries: Queries):
     rows = queries.author.many_rows_one_column()
 
     assert isinstance(rows[0], Author)
 
 
-def test_many_rows_many_columns(psycopg_conn, populate_db):
-    queries = Queries(psycopg_conn)
-
+def test_many_rows_many_columns(queries: Queries):
     rows = queries.author.many_rows_many_coulmns()
 
     assert isinstance(rows[0].author, Author)
@@ -68,18 +66,18 @@ def test_many_rows_many_columns(psycopg_conn, populate_db):
     assert rows[0].one == 1
 
 
-def test_required_parameter(psycopg_conn):
-    queries = Queries(psycopg_conn)
-
+def test_required_parameter(queries: Queries):
     assert "foo" == queries.author.required_parameter("foo")
 
 
-def test_optional_parameter(psycopg_conn):
-    queries = Queries(psycopg_conn)
-
+def test_optional_parameter(queries: Queries):
     assert queries.author.optional_parameter(None) is None
     assert queries.author.optional_parameter("foo") == "foo"
 
 
-def test_optional_parameter(psycopg_conn):
-    pass
+def test_query_view(queries: Queries):
+    full_author = queries.author.full_author()
+    assert isinstance(full_author[0], FullAuthorRow)
+    assert isinstance(full_author[0].author, Author)
+    assert isinstance(full_author[0].books, list)
+    assert isinstance(full_author[0].books[0], Book)

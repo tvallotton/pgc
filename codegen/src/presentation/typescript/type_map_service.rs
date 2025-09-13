@@ -9,52 +9,6 @@ use crate::{
 #[derive(Clone, Copy)]
 pub struct TypescriptTypeMapService;
 
-impl TypescriptTypeMapService {
-    pub fn column_requires_parser(&self, r#type: Type) -> bool {
-        return matches!(
-            r#type,
-            Type::Int8 | Type::Serial8 | Type::UserDefined { .. } | Type::Array { .. }
-        );
-    }
-
-    pub fn type_parser(&self, r#type: Type) -> String {
-        match r#type {
-            Type::Nullable(r#type) => format!(
-                "new NullParser({})",
-                self.type_parser(Type::clone(&*r#type))
-            ),
-            Type::UserDefined { module_path, name } => {
-                format!("parser.{}.{}()", module_path[1], to_camel_case(&name))
-            }
-
-            Type::Array { r#type, dim } if dim != 1 => {
-                format!(
-                    "{}.arrayOfThis()",
-                    self.type_parser(Type::Array {
-                        r#type,
-                        dim: dim - 1
-                    })
-                )
-            }
-            Type::Array { r#type, dim: 1 } => {
-                format!(
-                    "new ArrayParser({})",
-                    self.type_parser(Type::clone(&*r#type))
-                )
-            }
-            Type::Bool => "new BooleanParser()".into(),
-            Type::Date | Type::DateTz | Type::Timestamp | Type::TimestampTz => {
-                "new DateParser()".into()
-            }
-            Type::Int8 => "new BigIntParser()".into(),
-            Type::Float4 | Type::Float8 | Type::Int2 | Type::Int4 => "new NumberParser()".into(),
-            Type::Bytea => "new BufferParser()".into(),
-            Type::Json => "new JsonParser()".into(),
-            _ => "new StringParser()".into(),
-        }
-    }
-}
-
 impl TypeMapService for TypescriptTypeMapService {
     fn get(&self, current_module: Vec<String>, r#type: &Type) -> LanguageType {
         match r#type {

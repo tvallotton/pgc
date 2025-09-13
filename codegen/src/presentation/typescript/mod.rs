@@ -17,11 +17,11 @@ pub fn postgres() -> TemplateGenConfig {
         query_directory_entrypoint: "queries.ts",
         model_directory_entrypoint: "models.ts",
         file_extension: "ts",
-        query_template: include_str!("./templates/postgres/query.j2"),
-        model_template: include_str!("./templates/postgres/model.j2"),
-        model_init_template: include_str!("./templates/postgres/model_init.j2"),
+        query_template: include_str!("./templates/pg/query.j2"),
+        model_template: include_str!("./templates/pg/model.j2"),
+        model_init_template: include_str!("./templates/pg/model_init.j2"),
         type_map_service: &TypescriptTypeMapService,
-        other_templates: &[("parsers.ts", include_str!("./templates/parsers.ts"))],
+        other_templates: &[],
         register_filters: Some(register_filters),
     }
 }
@@ -31,16 +31,8 @@ fn register_filters(env: &mut Environment) -> Result<(), Error> {
         matches!(Type::from_jinja(ty), Type::Nullable(_))
     });
 
-    env.add_filter("type_parser", |value: Value| {
-        TypescriptTypeMapService.type_parser(Type::from_jinja(value))
-    });
-
     env.add_filter("is_user_defined", |value: Value| -> bool {
         matches!(Type::from_jinja(value), Type::UserDefined { .. })
-    });
-
-    env.add_filter("requires_parsing", |value: Value| -> bool {
-        TypescriptTypeMapService.column_requires_parser(Type::from_jinja(value))
     });
 
     Ok(())
