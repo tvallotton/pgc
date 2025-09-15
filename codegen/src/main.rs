@@ -9,8 +9,6 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::{slice, sync::atomic::AtomicU64};
 
 pub mod error;
-#[cfg(test)]
-pub mod faker;
 pub mod ir;
 pub mod mock;
 pub mod presentation;

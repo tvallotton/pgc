@@ -31,25 +31,34 @@ impl OverriddenTypeMapService {
             overrides: ir.request.config.codegen.types.clone(),
         }
     }
+
+    fn get_from_ident(&self, module: Vec<String>, r#type: &Type, ident: &str) -> LanguageType {
+        let Some(type_config) = self.overrides.get(ident) else {
+            return self.service.get(module, r#type);
+        };
+
+        return LanguageType {
+            name: None,
+            annotation: type_config.annotation.clone(),
+            constructor: None,
+            import: type_config.import.iter().cloned().collect(),
+        };
+    }
 }
 
 impl TypeMapService for OverriddenTypeMapService {
     fn get(&self, module: Vec<String>, r#type: &Type) -> LanguageType {
-        return self.service.get(module, r#type);
-        // let Ok(ty) = Type::NAMES.binary_search_by(|(_, _, ty)| ty.cmp(r#type)) else {
-        // };
-        // let (_, name, _) = Type::NAMES[ty];
+        if let Type::Other { schema, name } = r#type {
+            return self.get_from_ident(module, r#type, &format!("{}.{}", schema, name));
+        }
 
-        // let Some(type_config) = self.overrides.get(name) else {
-        //     return self.service.get(module, r#type);
-        // };
+        let Ok(index) = Type::NAMES.binary_search_by(|(_, _, ty)| ty.cmp(r#type)) else {
+            return self.service.get(module, r#type);
+        };
 
-        // return LanguageType {
-        //     name: None,
-        //     annotation: type_config.annotation.clone(),
-        //     import: type_config.import.clone(),
-        //     module: None,
-        // };
+        let (_, name, _) = Type::NAMES[index];
+
+        self.get_from_ident(module, r#type, name)
     }
 }
 

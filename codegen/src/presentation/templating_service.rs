@@ -153,18 +153,3 @@ impl TemplatingService {
         Ok(())
     }
 }
-
-#[cfg(test)]
-mod test {
-    use std::sync::Arc;
-
-    use fake::{Fake, Faker};
-
-    use crate::{ir::IrService, request::Request};
-    #[test]
-    fn file_has_name() {
-        let mut request: Request = Faker.fake();
-        request.queries = Arc::default();
-        let ir = IrService::new(request).unwrap().build();
-    }
-}

@@ -32,3 +32,7 @@ select ?val;
 
 -- @name: full_author :many
 select * from full_author;
+
+
+-- @name: get_json :one
+select '{}'::json;

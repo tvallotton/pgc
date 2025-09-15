@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     ir::Type,
     presentation::type_mapping_service::{LanguageType, TypeMapService},
-    utils::{to_camel_case, to_pascal_case},
+    utils::to_pascal_case,
 };
 
 #[derive(Clone, Copy)]
@@ -15,7 +15,7 @@ impl TypeMapService for TypescriptTypeMapService {
             Type::Any | Type::AnyCompatibleNonArray | Type::AnyCompatible => {
                 LanguageType::annotation("any")
             }
-            Type::Int8 => LanguageType::annotation("bigint"),
+            Type::Int8 => LanguageType::annotation("string"),
             Type::AnyArray | Type::AnyCompatibleArray => LanguageType::annotation("Array<any>"),
             Type::Json => LanguageType::annotation("any"),
             Type::UserDefined { module_path, name } => {

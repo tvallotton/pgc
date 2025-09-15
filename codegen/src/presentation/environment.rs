@@ -146,7 +146,10 @@ pub fn starts_with(text: &str, pattern: &str) -> bool {
 }
 
 pub fn to_camel_case(s: &str) -> String {
-    s.to_lower_camel_case()
+    s.split('.')
+        .map(|s| s.to_lower_camel_case())
+        .collect::<Vec<_>>()
+        .join(".")
 }
 
 pub fn to_pascal_case(s: &str) -> String {

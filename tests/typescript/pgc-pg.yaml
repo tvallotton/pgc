@@ -4,8 +4,8 @@ database:
     - tests/schema.sql
 
 queries:
-  - tests/author.sql
-  - tests/book.sql
+  - tests/typescript/author.sql
+  - tests/typescript/book.sql
 
 codegen:
   language: typescript
@@ -13,6 +13,7 @@ codegen:
   out: tests/typescript/out_pg
   enums:
     - public.genre
+
   options:
     deno: true
     package: out_pg
