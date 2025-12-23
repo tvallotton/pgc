@@ -1,0 +1,4 @@
+{%- for module in ir.model_modules.model_modules -%}
+export type * as "{{module}}" from "./{{module}}.ts";
+{%- endfor %}
+export * from "./public.ts";

@@ -14,7 +14,8 @@ export class SchemaService {
 
   async loadCatalog() {
     await this.loadMigrations();
-    return this.querySchemas();
+    const { schemas } = await this.querySchemas();
+    return { schemas: schemas ?? [] };
   }
 
   private async loadMigrations() {
@@ -130,7 +131,7 @@ const LOAD_SCHEMA_QUERY = `
                   FROM enums
                   WHERE enums.enum_schema = schemas.schema_name
               ),
-              'models', (
+              'records', (
                   SELECT jsonb_agg(
                       jsonb_build_object(
                           'name', table_name,

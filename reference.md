@@ -62,7 +62,8 @@ The codegen section has the following arguments:
 
 ```yaml
 codegen:
-  target: python:asyncpg
+  language: python
+  driver: asyncpg
   out: ./app/queries
   enums:
     - genre

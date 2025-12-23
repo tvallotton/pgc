@@ -3,7 +3,9 @@
     "build:wasm": "deno run --allow-sys --allow-run --allow-net --allow-env --allow-write --allow-read build.ts",
     "dev": "deno run --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read src/main.ts",
     "build": "deno run build:wasm && deno compile --allow-sys --allow-net --allow-run --allow-env --allow-write --allow-read --output pgc src/main.ts",
-    "install": "deno run build && mv pgc ~/.local/bin"
+    "test:python": "rm -rf tests/python/out_asyncpg tests/python/out_psycopg && deno run dev build -f tests/python/pgc-asyncpg.yaml && deno run dev build -f tests/python/pgc-psycopg.yaml && uv run --project tests/python pytest",
+    "test:typescript": "rm -rf tests/typescript/out_postgres && deno run dev build -f tests/typescript/pgc-pg.yaml",
+    "install": "deno run build && mv pgc ~/.local/b in"
   },
   "imports": {
     "@eemeli/yaml": "jsr:@eemeli/yaml@^2.8.0",
@@ -15,7 +17,6 @@
     "@types/node": "npm:@types/node@^24.0.7",
     "commander": "npm:commander@^14.0.0",
     "glob": "npm:glob@^11.0.3",
-
     "postgres": "npm:postgres@^3.4.7",
     "zod": "npm:zod@^3.25.67"
   }

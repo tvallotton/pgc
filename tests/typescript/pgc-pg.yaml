@@ -1,0 +1,19 @@
+version: "1"
+database:
+  migrations:
+    - tests/schema.sql
+
+queries:
+  - tests/typescript/author.sql
+  - tests/typescript/book.sql
+
+codegen:
+  language: typescript
+  driver: postgres
+  out: tests/typescript/out_pg
+  enums:
+    - public.genre
+
+  options:
+    deno: true
+    package: out_pg

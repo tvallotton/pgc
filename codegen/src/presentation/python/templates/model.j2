@@ -1,0 +1,28 @@
+import dataclasses
+{%- if model_module.enums %}
+import enum
+{%- endif %}
+{%- for type in used_types %}
+{%- for import in (type | imports) %}
+{{import}}
+{%- endfor %}
+{%- endfor %}
+from {{ir.request.config.codegen.options.package}} import models
+
+{%- for enum in model_module.enums %}
+
+class {{enum.name | to_pascal_case }}(enum.StrEnum):
+    {%- for value in enum.values %}
+    {{ value | to_screaming_snake_case }} = {{ value | to_c_string }}
+    {%- endfor %}
+{% endfor %}
+
+{%- for model in model_module.models %}
+
+
+@dataclasses.dataclass
+class {{ model.name | to_pascal_case }}:
+    {%- for field in model.fields %}
+    {{field.name}}: {{ field.type | annotation }}
+    {%- endfor %}
+{%- endfor %}

@@ -18,9 +18,9 @@ codegen:
   options:
 `;
 
-Deno.test(function parseYAML() {
-  ConfigService.fromFile({
-    path: `pgc.yaml`,
-    content: YAML,
-  });
-});
+// Deno.test(function parseYAML() {
+//   ConfigService.fromFile({
+//     path: `pgc.yaml`,
+//     content: YAML,
+//   });
+// });

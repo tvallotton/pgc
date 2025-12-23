@@ -1,0 +1,162 @@
+use std::sync::Arc;
+
+use super::r#type::Type;
+use crate::request::{Catalog, Column, OutputType, Schema};
+#[derive(Clone)]
+pub struct TypeService {
+    pub catalog: Catalog,
+}
+
+impl TypeService {
+    pub fn user_defined<'a>(&self, module_path: impl Iterator<Item = &'a str>, name: &str) -> Type {
+        Type::UserDefined {
+            module_path: module_path.map(|str| str.into()).collect(),
+            name: name.into(),
+        }
+    }
+
+    pub fn resolve_from_output(&self, ty: &OutputType) -> Type {
+        self.resolve_from_catalog(&ty.schema, &ty.name)
+    }
+
+    pub fn from_column(&self, column: &Column) -> Type {
+        let schema_name = &column.type_field.schema_name;
+        let column_name = &column.type_field.name;
+
+        let mut r#type = self.resolve_from_catalog(schema_name, column_name);
+
+        if let Some(r#type_) = self.find_table_backed_enum(column) {
+            r#type = r#type_;
+        }
+
+        if column.type_field.is_array {
+            r#type = Type::Array {
+                r#type: Arc::new(r#type),
+                dim: column.type_field.array_dimensions,
+            };
+        }
+
+        if column.is_nullable {
+            r#type = Type::Nullable(Arc::new(r#type));
+        }
+
+        return r#type;
+    }
+
+    fn find_table_backed_enum(&self, column: &Column) -> Option<Type> {
+        let schema = self.get_schema(column.foreign_table_schema.as_deref()?)?;
+        self.resolve_enum(schema, column.foreign_table_name.as_ref()?)
+    }
+
+    fn resolve_from_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Type {
+        if let Some(ty) = self.resolve_from_catalog_non_array(schema_name, name) {
+            return ty;
+        }
+
+        let Some(name) = name.strip_prefix('_') else {
+            return Type::Any;
+        };
+
+        let r#type = self
+            .resolve_from_catalog_non_array(schema_name, &name.into())
+            .unwrap_or(Type::Any);
+
+        Type::Array {
+            r#type: Arc::new(r#type),
+            dim: 1,
+        }
+    }
+
+    fn resolve_from_catalog_non_array(
+        &self,
+        schema_name: &Arc<str>,
+        name: &Arc<str>,
+    ) -> Option<Type> {
+        if &**schema_name == "pg_catalog" {
+            return self.from_pg_catalog(&name);
+        }
+        self.from_user_defined_catalog(schema_name, name)
+    }
+
+    fn from_user_defined_catalog(&self, schema_name: &Arc<str>, name: &Arc<str>) -> Option<Type> {
+        let schema = self.get_schema(schema_name)?;
+
+        self.resolve_record(schema, name)
+            .or_else(|| self.resolve_enum(schema, name))
+    }
+
+    fn resolve_enum(&self, schema: &Schema, name: &Arc<str>) -> Option<Type> {
+        schema.enums.iter().find(|enum_| enum_.name == *name)?;
+        Some(self.user_defined_model(schema, name))
+    }
+
+    fn resolve_record(&self, schema: &Schema, name: &Arc<str>) -> Option<Type> {
+        schema.records.iter().find(|record| record.name == *name)?;
+        Some(self.user_defined_model(schema, name))
+    }
+
+    fn user_defined_model(&self, schema: &Schema, name: &Arc<str>) -> Type {
+        let module_path = Arc::new(["models".into(), schema.name.clone()]);
+        Type::UserDefined {
+            module_path,
+            name: name.clone(),
+        }
+    }
+
+    fn from_pg_catalog(&self, type_name: &str) -> Option<Type> {
+        let index = Type::NAMES
+            .binary_search_by(|(name, _, _)| name.cmp(&type_name))
+            .ok()?;
+        Some(Type::NAMES[index].2.clone())
+    }
+
+    fn get_schema(&self, schema_name: &str) -> Option<&Schema> {
+        self.catalog
+            .schemas
+            .iter()
+            .find(|schema| &*schema.name == schema_name)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        ir::{Type, TypeService},
+        mock::{self, records, schema},
+    };
+
+    fn type_service() -> TypeService {
+        TypeService {
+            catalog: mock::catalog(),
+        }
+    }
+
+    #[test]
+    fn type_service_user_defined_model() {
+        let type_service = type_service();
+        let schema = schema();
+        let record = &schema.records[0];
+        let user_defined = type_service.user_defined_model(&schema, &record.name);
+        let Type::UserDefined { name, .. } = user_defined else {
+            unreachable!()
+        };
+        assert_eq!(name, record.name);
+    }
+
+    #[test]
+    fn type_service_get_schema() {
+        let type_service = type_service();
+        let name = "public";
+        let schema = type_service.get_schema(name).unwrap();
+        assert_eq!(&*schema.name, name);
+    }
+
+    #[test]
+    fn type_service_from_pg_catalog() {
+        let type_service = type_service();
+        assert_eq!(
+            type_service.from_pg_catalog("int4range"),
+            Some(Type::Int4Range)
+        )
+    }
+}

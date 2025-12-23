@@ -14,7 +14,7 @@ export class ExcluderService {
       );
 
       if (!schema) return;
-      schema.models = schema.models.filter((table) => table.name != name);
+      schema.records = schema.records.filter((table) => table.name != name);
     }
   }
 }
